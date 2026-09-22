@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "build": "npm run typecheck && esbuild ts/main.ts --bundle --format=iife --target=es2017 --minify --outfile=dist/app.js",
-    "watch": "esbuild ts/main.ts --bundle --format=iife --target=es2017 --sourcemap --outfile=dist/app.js --watch",
+    "dev": "esbuild ts/main.ts --bundle --format=iife --target=es2017 --sourcemap --outfile=dist/app.js --servedir=. --serve=8080",
+    "watch":"esbuild ts/main.ts --bundle --format=iife --target=es2017 --sourcemap --outfile=dist/app.js --watch",
     "typecheck": "tsc"
   },
   "devDependencies": {

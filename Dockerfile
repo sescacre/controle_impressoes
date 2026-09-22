@@ -30,6 +30,7 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html/dist
 COPY html /usr/share/nginx/html/html
 COPY css /usr/share/nginx/html/css
+COPY assets /usr/share/nginx/html/assets
 
 # nginx-unprivileged já roda como usuário não-root e escuta na 8080
 EXPOSE 8080

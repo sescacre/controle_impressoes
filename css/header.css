@@ -5,7 +5,9 @@ header{background:var(--navy-soft);color:var(--text-on-dark);padding:22px 20px 2
 .brand{display:flex;flex-direction:column;gap:6px;}
 .brand .kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.04em;color:var(--text-on-dark-muted);}
 .brand h1{font-family:var(--font-head);font-weight:600;font-size:26px;margin:0;line-height:1.15;display:flex;align-items:center;gap:10px;}
-.brand h1 .app-icon{font-size:24px;line-height:1;}
+/* Logotipo do SGCI: PNG sem fundo e sem moldura (a imagem já traz o nome e a legenda) */
+.brand h1 .logo{display:block;height:80px;width:auto;}
+.brand .subtitle{font-size:14px;color:var(--text-on-dark-muted);}
 .head-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
 .month-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
 .pill{font-family:var(--font-body);font-size:13px;font-weight:500;padding:7px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:var(--text-on-dark-muted);cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease;white-space:nowrap;}

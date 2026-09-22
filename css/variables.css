@@ -8,6 +8,7 @@
   --text:hsl(210 20% 20%);
   --text-dim:hsl(209 20% 60%);
   --text-muted:hsl(210 15% 40%);
+  --text-strong:hsl(200 30% 12%);
   --grid:hsl(204 10% 90%);
   --muted:hsl(210 10% 80%);
   --accent:hsl(220 80% 40%);
@@ -30,6 +31,9 @@
   --font-head:'Plus Jakarta Sans',system-ui,sans-serif;
   --font-body:'Plus Jakarta Sans',system-ui,sans-serif;
   --font-mono:'Plus Jakarta Sans',system-ui,sans-serif;
+  /* cards de KPI: valores em fonte display, títulos e linhas de apoio em fonte de texto */
+  --font-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --font-text:"Instrument Sans","Segoe UI",system-ui,sans-serif;
   --radius:1rem;
   --shadow:0 1px 2px hsl(210 20% 20% / .08);
 }

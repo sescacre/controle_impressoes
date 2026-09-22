@@ -54,7 +54,7 @@ function gerarRelatorioPdf(jsPDFCtor: NonNullable<Window['jspdf']>['jsPDF']): js
     doc.rect(0, 0, PAGE_W, 22, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
-    doc.text('SESC · Controle de Impressão e Locação de Equipamentos', MARGIN, 10);
+    doc.text('SGCI · Controle de Impressão e Locação de Equipamentos', MARGIN, 10);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
     doc.text('GETIC — Gerência de Tecnologia da Informação e Comunicação', MARGIN, 16.5);
     doc.setFontSize(9);

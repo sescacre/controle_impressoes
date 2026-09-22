@@ -6,7 +6,7 @@ import { runExport, showBanner } from './download';
 /* Gera script SQL (alternativa a banco relacional externo). */
 function montarScriptSql(): string {
   const lines: string[] = [];
-  lines.push('-- Script gerado pelo dashboard GETIC · Controle de Impressão e Locação');
+  lines.push('-- Script gerado pelo SGCI · Controle de Impressão e Locação');
   lines.push('-- Gerado em ' + new Date().toLocaleString('pt-BR'));
   lines.push('');
   lines.push('CREATE TABLE IF NOT EXISTS equipamentos (');

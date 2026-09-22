@@ -6,3 +6,9 @@
 
 # debug
 npm-debug.log*
+
+# environment / secrets
+.env
+
+# build cache
+/.next

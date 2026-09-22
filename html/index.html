@@ -1,192 +1,201 @@
 <!doctype html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GETIC · Controle de Impressão (versão standalone)</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖨️</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
-<link rel="stylesheet" href="../css/variables.css">
-<link rel="stylesheet" href="../css/base.css">
-<link rel="stylesheet" href="../css/header.css">
-<link rel="stylesheet" href="../css/contract.css">
-<link rel="stylesheet" href="../css/swal.css">
-<link rel="stylesheet" href="../css/dashboard.css">
-<link rel="stylesheet" href="../css/tables.css">
-<link rel="stylesheet" href="../css/modal.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PrintGest · Controle de Impressão</title>
+  <link rel="icon" type="image/png" href="../assets/apple-icon.png">
+  <link rel="apple-touch-icon" href="../assets/apple-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="../css/fonts.css">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/header.css">
+  <link rel="stylesheet" href="../css/contract.css">
+  <link rel="stylesheet" href="../css/swal.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/tables.css">
+  <link rel="stylesheet" href="../css/modal.css">
 </head>
+
 <body>
 
-<header>
-  <div class="head-inner">
-    <div class="brand">
-      <span class="kicker">SESC · GERÊNCIA DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO</span>
-      <h1><span class="app-icon" aria-hidden="true">🖨️</span>Controle de Impressão & Locação de Equipamentos</h1>
-    </div>
-    <div class="head-right">
-      <div class="month-row">
-        <label for="yearSelect" class="combo-label">Ano</label>
-        <select id="yearSelect" class="combo combo-year"></select>
-        <label for="monthSelect" class="combo-label">Mês de referência</label>
-        <select id="monthSelect" class="combo"></select>
+  <header>
+    <div class="head-inner">
+      <div class="brand">
+        <h1><img class="logo" src="../assets/logo-sgci.png" alt="SGCI — Sistema de Gestão Centralizada de Impressões">
+        </h1>
+        <span class="subtitle">Controle de Impressão & Locação de Equipamentos</span>
       </div>
-      <div class="month-row">
-        <button class="btn secondary admin-only" id="btnNovoMes">+ Lançar leituras do mês</button>
-        <button class="btn secondary admin-only" id="btnExcel">Exportar Excel (.xlsx)</button>
-        <button class="btn secondary admin-only" id="btnSql">Gerar SQL</button>
-        <button class="btn secondary admin-only" id="btnRecibo">Baixar relatório (PDF)</button>
-      </div>
-      <span class="note" id="dbNote"></span>
-    </div>
-  </div>
-  <button class="btn ghost" id="btnAdmin">🔒 Área admin</button>
-  <div class="contract-kpis" id="contractKpis"></div>
-</header>
-
-<div class="wrap">
-  <div id="banners"></div>
-  <!-- Conteúdo do mês selecionado; some quando o mês não tem leituras -->
-  <div id="dashboardContent">
-    <div class="kpis" id="kpis"></div>
-
-    <div class="grid2">
-      <div class="panel">
-        <h2>Custo total por setor</h2>
-        <div class="desc">Locação + impressão (R$) — 10 maiores custos no mês selecionado</div>
-        <div class="chart-box h280"><canvas id="chartSetor"></canvas></div>
-      </div>
-      <div class="panel">
-        <h2>Mix por tipo de equipamento</h2>
-        <div class="desc">Participação no custo total (R$)</div>
-        <div class="chart-box h280"><canvas id="chartTipo"></canvas></div>
+      <div class="head-right">
+        <div class="month-row">
+          <label for="yearSelect" class="combo-label">Ano</label>
+          <select id="yearSelect" class="combo combo-year"></select>
+          <label for="monthSelect" class="combo-label">Mês de referência</label>
+          <select id="monthSelect" class="combo"></select>
+        </div>
+        <div class="month-row">
+          <button class="btn secondary admin-only" id="btnNovoMes">+ Lançar leituras do mês</button>
+          <button class="btn secondary admin-only" id="btnExcel">Exportar Excel (.xlsx)</button>
+          <button class="btn secondary admin-only" id="btnSql">Gerar SQL</button>
+          <button class="btn secondary admin-only" id="btnRecibo">Baixar relatório (PDF)</button>
+        </div>
+        <span class="note" id="dbNote"></span>
       </div>
     </div>
+    <button class="btn ghost" id="btnAdmin">🔒 Área admin</button>
+    <div class="contract-kpis" id="contractKpis"></div>
+  </header>
 
-    <div class="grid2b">
-      <div class="panel">
-        <h2>Unidade x custo</h2>
-        <div class="desc">Rio Branco, Interior e Centro Sul</div>
-        <div class="chart-box h230"><canvas id="chartUnidade"></canvas></div>
+  <div class="wrap">
+    <div id="banners"></div>
+    <!-- Conteúdo do mês selecionado; some quando o mês não tem leituras -->
+    <div id="dashboardContent">
+      <div class="kpis" id="kpis"></div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h2>Custo total por setor</h2>
+          <div class="desc">Locação + impressão (R$) — 10 maiores custos no mês selecionado</div>
+          <div class="chart-box h280"><canvas id="chartSetor"></canvas></div>
+        </div>
+        <div class="panel">
+          <h2>Mix por tipo de equipamento</h2>
+          <div class="desc">Participação no custo total (R$)</div>
+          <div class="chart-box h280"><canvas id="chartTipo"></canvas></div>
+        </div>
       </div>
+
+      <div class="grid2b">
+        <div class="panel">
+          <h2>Unidade x custo</h2>
+          <div class="desc">Rio Branco, Interior e Centro Sul</div>
+          <div class="chart-box h230"><canvas id="chartUnidade"></canvas></div>
+        </div>
+        <div class="panel">
+          <h2>Maiores % de consumo do orçamento</h2>
+          <div class="desc">Top 8 siglas por participação percentual no mês</div>
+          <div class="chart-box h230"><canvas id="chartTop"></canvas></div>
+        </div>
+      </div>
+
       <div class="panel">
-        <h2>Maiores % de consumo do orçamento</h2>
-        <div class="desc">Top 8 siglas por participação percentual no mês</div>
-        <div class="chart-box h230"><canvas id="chartTop"></canvas></div>
+        <div class="panel-head">
+          <div>
+            <h2>Detalhamento por equipamento</h2>
+            <div class="desc">Clique nos cabeçalhos para ordenar. Filtro de unidade abaixo.</div>
+          </div>
+          <div class="filters" id="filters"></div>
+        </div>
+        <div class="table-scroll">
+          <table id="tbl">
+            <thead>
+              <tr>
+                <th data-k="item">#</th>
+                <th data-k="sigla">Sigla</th>
+                <th data-k="cod_orc">Centro de Custo</th>
+                <th data-k="setor">Setor</th>
+                <th data-k="tipo_equip">Tipo</th>
+                <th class="num" data-k="valor_loc">Locação (R$)</th>
+                <th class="num" data-k="qtd_copia">Cópias</th>
+                <th class="num" data-k="valor_copias">Impressão (R$)</th>
+                <th class="num" data-k="geral">Total (R$)</th>
+                <th class="num" data-k="pct">% Consumo</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div class="panel">
+    <section class="panel empty-state" id="emptyState" hidden>
+      <div class="empty-label">Sem dados</div>
+      <h2 id="emptyTitle"></h2>
+      <p>Ainda não há leituras lançadas para este mês. Entre na Área admin e use “Lançar leituras do mês”.</p>
+    </section>
+
+    <div class="panel admin-only" id="historyPanel">
       <div class="panel-head">
         <div>
-          <h2>Detalhamento por equipamento</h2>
-          <div class="desc">Clique nos cabeçalhos para ordenar. Filtro de unidade abaixo.</div>
+          <h2>Tabela de uso — histórico completo</h2>
+          <div class="desc">Todas as leituras já coletadas da planilha, mês a mês, todas as unidades. Visível só na área
+            administrativa.</div>
         </div>
-        <div class="filters" id="filters"></div>
       </div>
       <div class="table-scroll">
-        <table id="tbl">
+        <table id="tblHist">
           <thead>
             <tr>
-              <th data-k="item">#</th>
+              <th data-k="monthKey">Mês</th>
               <th data-k="sigla">Sigla</th>
               <th data-k="cod_orc">Centro de Custo</th>
               <th data-k="setor">Setor</th>
               <th data-k="tipo_equip">Tipo</th>
-              <th class="num" data-k="valor_loc">Locação (R$)</th>
+              <th class="num" data-k="leitura_anterior">Leit. Ant.</th>
+              <th class="num" data-k="leitura_atual">Leit. Atual</th>
               <th class="num" data-k="qtd_copia">Cópias</th>
               <th class="num" data-k="valor_copias">Impressão (R$)</th>
+              <th class="num" data-k="valor_loc">Locação (R$)</th>
               <th class="num" data-k="geral">Total (R$)</th>
-              <th class="num" data-k="pct">% Consumo</th>
             </tr>
           </thead>
-          <tbody id="tbody"></tbody>
+          <tbody id="tbodyHist"></tbody>
         </table>
       </div>
     </div>
+
+    <div class="footer-note" id="footerNote"></div>
   </div>
 
-  <section class="panel empty-state" id="emptyState" hidden>
-    <div class="empty-label">Sem dados</div>
-    <h2 id="emptyTitle"></h2>
-    <p>Ainda não há leituras lançadas para este mês. Entre na Área admin e use “Lançar leituras do mês”.</p>
-  </section>
-
-  <div class="panel admin-only" id="historyPanel">
-    <div class="panel-head">
-      <div>
-        <h2>Tabela de uso — histórico completo</h2>
-        <div class="desc">Todas as leituras já coletadas da planilha, mês a mês, todas as unidades. Visível só na área administrativa.</div>
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h2 id="lancTitulo">Lançamento de leituras</h2>
+          <p>A leitura anterior vem automaticamente do último mês salvo. Informe só a leitura atual de cada máquina —
+            igual ao contador do recibo de locação.</p>
+        </div>
+        <button class="close-x" id="btnFechar">✕</button>
       </div>
-    </div>
-    <div class="table-scroll">
-      <table id="tblHist">
-        <thead>
-          <tr>
-            <th data-k="monthKey">Mês</th>
-            <th data-k="sigla">Sigla</th>
-            <th data-k="cod_orc">Centro de Custo</th>
-            <th data-k="setor">Setor</th>
-            <th data-k="tipo_equip">Tipo</th>
-            <th class="num" data-k="leitura_anterior">Leit. Ant.</th>
-            <th class="num" data-k="leitura_atual">Leit. Atual</th>
-            <th class="num" data-k="qtd_copia">Cópias</th>
-            <th class="num" data-k="valor_copias">Impressão (R$)</th>
-            <th class="num" data-k="valor_loc">Locação (R$)</th>
-            <th class="num" data-k="geral">Total (R$)</th>
-          </tr>
-        </thead>
-        <tbody id="tbodyHist"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="footer-note" id="footerNote"></div>
-</div>
-
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="modal-head">
-      <div>
-        <h2 id="lancTitulo">Lançamento de leituras</h2>
-        <p>A leitura anterior vem automaticamente do último mês salvo. Informe só a leitura atual de cada máquina — igual ao contador do recibo de locação.</p>
-      </div>
-      <button class="close-x" id="btnFechar">✕</button>
-    </div>
-    <div class="modal-body">
-      <div id="lancBanner"></div>
-      <div class="lanc-head-wrap">
-        <div class="lanc-cols lanc-head-row">
-          <div class="lanc-cell name">Sigla</div>
-          <div class="lanc-cell name">Centro de Custo</div>
-          <div class="lanc-cell num">Leitura Anterior</div>
-          <div class="lanc-cell num">Leitura Atual</div>
-          <div class="lanc-cell num">Cópias</div>
-          <div class="lanc-cell num">Valor (R$)</div>
+      <div class="modal-body">
+        <div id="lancBanner"></div>
+        <div class="lanc-head-wrap">
+          <div class="lanc-cols lanc-head-row">
+            <div class="lanc-cell name">Sigla</div>
+            <div class="lanc-cell name">Centro de Custo</div>
+            <div class="lanc-cell num">Leitura Anterior</div>
+            <div class="lanc-cell num">Leitura Atual</div>
+            <div class="lanc-cell num">Cópias</div>
+            <div class="lanc-cell num">Valor (R$)</div>
+          </div>
+        </div>
+        <div class="lanc-scroll" id="lancBody"></div>
+        <div class="lanc-foot-wrap">
+          <div class="lanc-cols lanc-foot-row">
+            <div class="lanc-cell name lanc-foot-label">Total do mês</div>
+            <div class="lanc-cell num" id="lancTotCopias">—</div>
+            <div class="lanc-cell num" id="lancTotValor">—</div>
+          </div>
         </div>
       </div>
-      <div class="lanc-scroll" id="lancBody"></div>
-      <div class="lanc-foot-wrap">
-        <div class="lanc-cols lanc-foot-row">
-          <div class="lanc-cell name lanc-foot-label">Total do mês</div>
-          <div class="lanc-cell num" id="lancTotCopias">—</div>
-          <div class="lanc-cell num" id="lancTotValor">—</div>
+      <div class="modal-foot">
+        <span class="note" id="lancStatus"></span>
+        <div class="modal-actions">
+          <button class="btn secondary" id="btnCancelar">Cancelar</button>
+          <button class="btn" id="btnSalvarLanc">Salvar lançamento do mês</button>
         </div>
       </div>
     </div>
-    <div class="modal-foot">
-      <span class="note" id="lancStatus"></span>
-      <div class="modal-actions">
-        <button class="btn secondary" id="btnCancelar">Cancelar</button>
-        <button class="btn" id="btnSalvarLanc">Salvar lançamento do mês</button>
-      </div>
-    </div>
   </div>
-</div>
 
-<script src="../dist/app.js"></script>
+  <script src="../dist/app.js"></script>
 </body>
+
 </html>
