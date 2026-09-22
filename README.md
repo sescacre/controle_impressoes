@@ -1,6 +1,6 @@
 # PrintGest · Controle de Impressão
 
-O **PrintGest** (Sistema de Gestão Centralizada de Impressões — SGCI) é um dashboard para acompanhar custos de impressão e locação de equipamentos no âmbito do contrato **AC-2022-CS-003**. Ele centraliza leituras mensais de contadores por equipamento, calcula custos por página e por período, e exibe KPIs, gráficos e históricos que facilitam o controle orçamentário e a conferência de faturas da locadora.
+O **PrintGest** (Sistema de Gestão Centralizada de Impressões) é um dashboard para acompanhar custos de impressão e locação de equipamentos no âmbito do contrato **AC-2022-CS-003**. Ele centraliza leituras mensais de contadores por equipamento, calcula custos por página e por período, e exibe KPIs, gráficos e históricos que facilitam o controle orçamentário e a conferência de faturas da locadora.
 
 A aplicação roda inteiramente no navegador, **sem backend**: os dados ficam salvos localmente via `localStorage` (numa camada que imita a API de coleções de um banco de documentos), e relatórios podem ser exportados em Excel, PDF ou SQL diretamente da interface.
 
