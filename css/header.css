@@ -1,0 +1,33 @@
+header{background:var(--navy-soft);color:var(--text-on-dark);padding:22px 20px 26px;margin-bottom:20px;position:relative;border-bottom:3px solid var(--amber);}
+#btnAdmin{position:absolute;top:16px;right:20px;z-index:5;}
+@media (max-width:640px){ #btnAdmin{position:static;display:block;margin:0 0 10px auto;} }
+.head-inner{max-width:1360px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;}
+.brand{display:flex;flex-direction:column;gap:6px;}
+.brand .kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.04em;color:var(--text-on-dark-muted);}
+.brand h1{font-family:var(--font-head);font-weight:600;font-size:26px;margin:0;line-height:1.15;display:flex;align-items:center;gap:10px;}
+.brand h1 .app-icon{font-size:24px;line-height:1;}
+.head-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+.month-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+.pill{font-family:var(--font-body);font-size:13px;font-weight:500;padding:7px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:var(--text-on-dark-muted);cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease;white-space:nowrap;}
+.pill:hover{background:rgba(255,255,255,.12);}
+.pill.active{background:var(--text-on-dark);color:var(--navy-soft);border-color:var(--text-on-dark);}
+.combo-label{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;color:var(--text-on-dark-muted);margin-right:8px;}
+select.combo-year{padding-right:30px;min-width:88px;}
+select.combo{
+  font-family:var(--font-body);font-size:13.5px;font-weight:500;
+  padding:8px 34px 8px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.22);
+  background-color:rgba(255,255,255,.08);color:var(--text-on-dark);cursor:pointer;
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23FFFFFF' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center;
+}
+select.combo:hover{background-color:rgba(255,255,255,.14);}
+select.combo option{color:var(--text);background:var(--panel);}
+select.combo option:disabled{color:var(--text-dim);}
+.btn{font-family:var(--font-body);font-size:13px;font-weight:600;padding:8px 16px;border-radius:.5rem;border:2px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;white-space:nowrap;transition:.25s;}
+.btn:hover{background:hsl(220 80% 25%);border-color:hsl(220 80% 25%);}
+.btn.ghost{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.22);color:var(--text-on-dark);}
+.btn.secondary{background:var(--panel);border-color:var(--panel-border);color:var(--text);}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.filters{display:flex;gap:8px;flex-wrap:wrap;}
+.note{font-family:var(--font-mono);font-size:11px;color:var(--text-on-dark-muted);}

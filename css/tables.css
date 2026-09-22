@@ -1,0 +1,17 @@
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.02em;color:var(--text-dim);padding:9px 10px;border-bottom:1px solid var(--panel-border);position:sticky;top:0;background:var(--panel);cursor:pointer;user-select:none;}
+thead th:hover{color:var(--text);}
+thead th.num,tbody td.num{text-align:right;}
+tbody td{padding:8px 10px;border-bottom:1px solid var(--grid);font-family:var(--font-mono);font-size:12.5px;}
+tbody td.name{font-family:var(--font-body);font-size:13px;}
+tbody tr:hover{background:var(--accent-soft);}
+.tag{display:inline-block;font-size:10.5px;font-family:var(--font-body);font-weight:500;padding:2px 8px;border-radius:10px;}
+/* mesmas cores do gráfico "Mix por tipo de equipamento" */
+.tag.cat-multifuncional{background:var(--accent-soft);color:var(--accent);}
+.tag.cat-plotter{background:var(--amber-soft);color:var(--amber-text);}
+.tag.cat-frenteVerso{background:var(--teal-soft);color:var(--teal-text);}
+.tag.cat-policromatica{background:var(--purple-soft);color:var(--purple-text);}
+.cc{font-family:var(--font-mono);font-size:11.5px;color:var(--text-dim);}
+.barcell{position:relative;height:16px;background:var(--grid);border-radius:3px;overflow:hidden;width:90px;display:inline-block;vertical-align:middle;margin-right:6px;}
+.barcell i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);}
+.table-scroll{max-height:520px;overflow:auto;border-top:1px solid var(--panel-border);margin-top:6px;}

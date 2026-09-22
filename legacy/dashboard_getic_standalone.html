@@ -1,0 +1,1339 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GETIC · Controle de Impressão (versão standalone)</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖨️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    /* Paleta alinhada ao portal do cliente (Sesc Acre) */
+    --bg:hsl(220 12% 95%);
+    --panel:hsl(0 0% 100%);
+    --panel-border:hsl(210 10% 85%);
+    --navy:hsl(210 100% 20%);
+    --navy-soft:hsl(210 100% 30%);
+    --text:hsl(210 20% 20%);
+    --text-dim:hsl(209 20% 60%);
+    --grid:hsl(204 10% 90%);
+    --muted:hsl(210 10% 80%);
+    --accent:hsl(220 80% 40%);
+    --accent-light:hsl(220 80% 65%);
+    --accent-soft:hsl(220 80% 92%);
+    --amber:hsl(46 100% 48%);
+    --amber-soft:hsl(46 100% 90%);
+    --amber-text:hsl(43 100% 25%);
+    --teal:hsl(142 60% 36%);
+    --teal-soft:hsl(142 60% 92%);
+    --teal-text:hsl(142 60% 22%);
+    --purple:hsl(274 39% 54%);
+    --danger:hsl(0 72% 48%);
+    --danger-soft:hsl(0 72% 93%);
+    --danger-text:hsl(0 72% 32%);
+    --text-on-dark:hsl(0 0% 100%);
+    --text-on-dark-muted:hsl(211 49% 80%);
+    --font-head:'Plus Jakarta Sans',system-ui,sans-serif;
+    --font-body:'Plus Jakarta Sans',system-ui,sans-serif;
+    --font-mono:'Plus Jakarta Sans',system-ui,sans-serif;
+    --radius:1rem;
+    --shadow:0 1px 2px hsl(210 20% 20% / .08);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1360px;margin:0 auto;padding:0 20px 48px;}
+
+  header{background:var(--navy-soft);color:var(--text-on-dark);padding:22px 20px 26px;margin-bottom:20px;position:relative;border-bottom:3px solid var(--amber);}
+  #btnAdmin{position:absolute;top:16px;right:20px;z-index:5;}
+  @media (max-width:640px){ #btnAdmin{position:static;display:block;margin:0 0 10px auto;} }
+
+  /* SweetAlert2 no tema da página */
+  .swal2-container{background:rgba(11,18,31,.72) !important;backdrop-filter:blur(2px);}
+  .getic-swal-popup{
+    background:var(--panel) !important;color:var(--text) !important;
+    border-radius:14px !important;border:1px solid var(--panel-border) !important;
+    font-family:var(--font-body) !important;box-shadow:0 20px 60px rgba(0,0,0,.4) !important;
+  }
+  .getic-swal-title{color:var(--text) !important;font-family:var(--font-head) !important;font-weight:600 !important;font-size:19px !important;}
+  .getic-swal-html{color:var(--text-dim) !important;font-family:var(--font-body) !important;}
+  .getic-swal-icon{border-color:var(--accent) !important;color:var(--accent) !important;}
+  .getic-swal-confirm{
+    background:var(--accent) !important;border-radius:8px !important;font-family:var(--font-body) !important;
+    font-weight:600 !important;box-shadow:none !important;padding:9px 20px !important;
+  }
+  .getic-swal-confirm:focus{box-shadow:0 0 0 2px var(--accent-soft) !important;}
+  .getic-swal-cancel{
+    background:transparent !important;color:var(--text-dim) !important;border:1px solid var(--panel-border) !important;
+    border-radius:8px !important;box-shadow:none !important;font-family:var(--font-body) !important;padding:9px 20px !important;
+  }
+  .getic-swal-input{
+    background:var(--bg) !important;color:var(--text) !important;border:1px solid var(--panel-border) !important;
+    border-radius:8px !important;font-family:var(--font-mono) !important;font-size:14px !important;
+    box-shadow:none !important;
+  }
+  .getic-swal-input:focus{border-color:var(--accent) !important;box-shadow:0 0 0 2px var(--accent-soft) !important;}
+  .getic-swal-validation{
+    background:var(--amber-soft) !important;color:var(--amber-text) !important;border-radius:8px !important;font-family:var(--font-body) !important;
+  }
+  .getic-swal-actions{gap:10px !important;}
+  .getic-swal-closebtn{color:var(--text-dim) !important;}
+  .head-inner{max-width:1360px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;}
+  .brand{display:flex;flex-direction:column;gap:6px;}
+  .brand .kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.04em;color:var(--text-on-dark-muted);}
+  .brand h1{font-family:var(--font-head);font-weight:600;font-size:26px;margin:0;line-height:1.15;display:flex;align-items:center;gap:10px;}
+  .brand h1 .app-icon{font-size:24px;line-height:1;}
+  .head-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+  .month-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+  .pill{font-family:var(--font-body);font-size:13px;font-weight:500;padding:7px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:var(--text-on-dark-muted);cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease;white-space:nowrap;}
+  .pill:hover{background:rgba(255,255,255,.12);}
+  .pill.active{background:var(--text-on-dark);color:var(--navy-soft);border-color:var(--text-on-dark);}
+  .combo-label{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;color:var(--text-on-dark-muted);margin-right:8px;}
+  .admin-only{display:none;}
+  select.combo-year{padding-right:30px;min-width:88px;}
+  select.combo{
+    font-family:var(--font-body);font-size:13.5px;font-weight:500;
+    padding:8px 34px 8px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.22);
+    background-color:rgba(255,255,255,.08);color:var(--text-on-dark);cursor:pointer;
+    appearance:none;-webkit-appearance:none;-moz-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23FFFFFF' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 14px center;
+  }
+  select.combo:hover{background-color:rgba(255,255,255,.14);}
+  select.combo option{color:var(--text);background:var(--panel);}
+  select.combo option:disabled{color:var(--text-dim);}
+  .btn{font-family:var(--font-body);font-size:13px;font-weight:600;padding:8px 16px;border-radius:.5rem;border:2px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;white-space:nowrap;transition:.25s;}
+  .btn:hover{background:hsl(220 80% 25%);border-color:hsl(220 80% 25%);}
+  .btn.ghost{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.22);color:var(--text-on-dark);}
+  .btn.secondary{background:var(--panel);border-color:var(--panel-border);color:var(--text);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;}
+  .note{font-family:var(--font-mono);font-size:11px;color:var(--text-on-dark-muted);}
+
+  .contract-kpis{max-width:1360px;margin:18px auto 0;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .ckpi{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 16px;position:relative;overflow:hidden;}
+  .ckpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ckpi-bar,var(--accent-light));}
+  .ckpi .lbl{font-size:11px;color:var(--text-on-dark-muted);font-weight:500;}
+  .ckpi .val{font-family:var(--font-head);font-size:21px;font-weight:600;color:var(--text-on-dark);margin-top:5px;letter-spacing:-0.01em;}
+  .ckpi .sub{font-family:var(--font-mono);font-size:10.5px;color:var(--text-on-dark-muted);margin-top:3px;}
+  .ckpi.ok .val{color:hsl(142 60% 65%);} .ckpi.ok::before{--ckpi-bar:hsl(142 60% 45%);}
+  .ckpi.warn .val{color:hsl(0 72% 75%);} .ckpi.warn::before{--ckpi-bar:hsl(0 72% 55%);}
+  @media (max-width:900px){ .contract-kpis{grid-template-columns:repeat(2,1fr);} }
+
+  .contract-annual{max-width:1360px;margin:10px auto 0;display:flex;gap:18px;flex-wrap:wrap;align-items:center;
+    padding:10px 16px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.03);}
+  .contract-annual .a-item{display:flex;align-items:baseline;gap:6px;font-family:var(--font-body);font-size:12.5px;color:var(--text-on-dark-muted);}
+  .contract-annual .a-item b{font-family:var(--font-head);font-size:15px;color:var(--text-on-dark);font-weight:600;}
+  .contract-annual .a-item.warn b{color:hsl(0 72% 75%);}
+  .contract-annual .a-item.ok b{color:hsl(142 60% 65%);}
+  .contract-annual .a-sep{width:1px;align-self:stretch;background:rgba(255,255,255,.14);}
+  @media (max-width:900px){ .contract-annual .a-sep{display:none;} }
+
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px;}
+  .kpi{background:var(--panel);border:1px solid var(--panel-border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--bar,var(--accent));}
+  .kpi .lbl{font-size:12px;color:var(--text-dim);font-weight:500;}
+  .kpi .val{font-family:var(--font-head);font-size:26px;font-weight:600;margin-top:6px;letter-spacing:-0.01em;}
+  .kpi .sub{font-family:var(--font-mono);font-size:11.5px;color:var(--text-dim);margin-top:4px;}
+  .kpi.k-geral{--bar:var(--accent);} .kpi.k-impr{--bar:var(--teal);} .kpi.k-loc{--bar:var(--amber);}
+  .kpi.k-eq{--bar:var(--purple);} .kpi.k-cop{--bar:var(--text-dim);}
+
+  .grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-bottom:14px;}
+  .grid2b{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .panel{background:var(--panel);border:1px solid var(--panel-border);border-radius:var(--radius);padding:18px 20px 14px;box-shadow:var(--shadow);}
+  .panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .panel h2{font-family:var(--font-head);font-size:14.5px;font-weight:600;margin:0 0 2px;}
+  .panel .desc{font-size:11.5px;color:var(--text-dim);margin-bottom:12px;}
+  .chart-box{position:relative;width:100%;}
+  .chart-box.h280{height:280px;} .chart-box.h230{height:230px;}
+  .chart-fallback{height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:12.5px;text-align:center;padding:20px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.02em;color:var(--text-dim);padding:9px 10px;border-bottom:1px solid var(--panel-border);position:sticky;top:0;background:var(--panel);cursor:pointer;user-select:none;}
+  thead th:hover{color:var(--text);}
+  thead th.num,tbody td.num{text-align:right;}
+  tbody td{padding:8px 10px;border-bottom:1px solid var(--grid);font-family:var(--font-mono);font-size:12.5px;}
+  tbody td.name{font-family:var(--font-body);font-size:13px;}
+  tbody tr:hover{background:var(--accent-soft);}
+  .tag{display:inline-block;font-size:10.5px;font-family:var(--font-body);font-weight:500;padding:2px 8px;border-radius:10px;}
+  .tag.multi{background:var(--accent-soft);color:var(--accent);}
+  .tag.a1{background:var(--amber-soft);color:var(--amber-text);}
+  .tag.simples{background:var(--teal-soft);color:var(--teal-text);}
+  .cc{font-family:var(--font-mono);font-size:11.5px;color:var(--text-dim);}
+  .barcell{position:relative;height:16px;background:var(--grid);border-radius:3px;overflow:hidden;width:90px;display:inline-block;vertical-align:middle;margin-right:6px;}
+  .barcell i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);}
+  .table-scroll{max-height:520px;overflow:auto;border-top:1px solid var(--panel-border);margin-top:6px;}
+
+  .footer-note{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);text-align:center;margin-top:22px;}
+
+  .overlay{position:fixed;inset:0;background:rgba(11,18,31,.55);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50;overflow:auto;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--panel);border-radius:12px;max-width:980px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+  .modal-head{padding:18px 22px;border-bottom:1px solid var(--panel-border);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .modal-head h2{font-family:var(--font-head);font-size:18px;margin:0 0 4px;}
+  .modal-head p{margin:0;font-size:12.5px;color:var(--text-dim);}
+  .modal-body{padding:14px 22px 0;}
+  .lanc-cols{display:grid;grid-template-columns:1.3fr 1.2fr 1.1fr 1.2fr .9fr 1.1fr;column-gap:0;min-width:640px;}
+  .lanc-head-wrap{overflow-x:auto;border-bottom:2px solid var(--panel-border);}
+  .lanc-scroll{max-height:44vh;overflow-y:auto;overflow-x:auto;border-bottom:1px solid var(--panel-border);}
+  .lanc-foot-wrap{overflow-x:auto;}
+  .lanc-cell{padding:8px 8px;font-size:12.5px;}
+  .lanc-cols.lanc-head-row .lanc-cell{font-weight:600;font-size:11px;letter-spacing:.02em;color:var(--text-dim);background:var(--panel);padding-top:9px;padding-bottom:9px;}
+  .lanc-cols.lanc-row .lanc-cell{border-bottom:1px solid var(--grid);font-family:var(--font-mono);}
+  .lanc-cols.lanc-row:nth-child(even) .lanc-cell{background:var(--bg);}
+  .lanc-cols.lanc-foot-row .lanc-cell{font-weight:600;border-top:2px solid var(--panel-border);padding-top:10px;padding-bottom:10px;background:var(--panel);}
+  .lanc-cell.num{text-align:right;font-family:var(--font-mono);}
+  .lanc-cell.name{font-family:var(--font-body);}
+  .lanc-cols input{width:100%;max-width:120px;font-family:var(--font-mono);font-size:12.5px;padding:5px 7px;border:1px solid var(--panel-border);border-radius:6px;background:var(--panel);color:var(--text);}
+  .lanc-cols input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .modal-foot{padding:14px 22px;border-top:1px solid var(--panel-border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .close-x{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-dim);line-height:1;}
+  .totrow td{font-weight:600;border-top:2px solid var(--panel-border);}
+  .banner{padding:10px 14px;border-radius:8px;font-size:12.5px;margin-bottom:12px;}
+  .banner.warn{background:var(--amber-soft);color:var(--amber-text);}
+  .banner.err{background:var(--danger-soft);color:var(--danger-text);}
+  .banner.ok{background:var(--teal-soft);color:var(--teal-text);}
+
+  @media (max-width:1000px){
+    .kpis{grid-template-columns:repeat(2,1fr);}
+    .grid2,.grid2b{grid-template-columns:1fr;}
+  }
+  label.field-label{display:block;font-size:11.5px;color:var(--text-dim);margin-bottom:4px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-inner">
+    <div class="brand">
+      <span class="kicker">SESC · GERÊNCIA DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO</span>
+      <h1><span class="app-icon" aria-hidden="true">🖨️</span>Controle de Impressão & Locação de Equipamentos</h1>
+    </div>
+    <div class="head-right">
+      <div class="month-row">
+        <label for="yearSelect" class="combo-label">Ano</label>
+        <select id="yearSelect" class="combo combo-year"></select>
+        <label for="monthSelect" class="combo-label">Mês de referência</label>
+        <select id="monthSelect" class="combo"></select>
+      </div>
+      <div class="month-row">
+        <button class="btn secondary admin-only" id="btnNovoMes">+ Lançar leituras do mês</button>
+        <button class="btn secondary admin-only" id="btnExcel">Exportar Excel (.xlsx)</button>
+        <button class="btn secondary admin-only" id="btnSql">Gerar SQL</button>
+        <button class="btn secondary admin-only" id="btnRecibo">Baixar relatório (PDF)</button>
+      </div>
+      <span class="note" id="dbNote"></span>
+    </div>
+  </div>
+  <button class="btn ghost" id="btnAdmin">🔒 Área admin</button>
+  <div class="contract-kpis" id="contractKpis"></div>
+</header>
+
+<div class="wrap">
+  <div id="banners"></div>
+  <div class="kpis" id="kpis"></div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>Custo total por setor</h2>
+      <div class="desc">Locação + impressão (R$) — 10 maiores custos no mês selecionado</div>
+      <div class="chart-box h280"><canvas id="chartSetor"></canvas></div>
+    </div>
+    <div class="panel">
+      <h2>Mix por tipo de equipamento</h2>
+      <div class="desc">Participação no custo total (R$)</div>
+      <div class="chart-box h280"><canvas id="chartTipo"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid2b">
+    <div class="panel">
+      <h2>Unidade x custo</h2>
+      <div class="desc">Rio Branco, Interior e Centro Sul</div>
+      <div class="chart-box h230"><canvas id="chartUnidade"></canvas></div>
+    </div>
+    <div class="panel">
+      <h2>Maiores % de consumo do orçamento</h2>
+      <div class="desc">Top 8 siglas por participação percentual no mês</div>
+      <div class="chart-box h230"><canvas id="chartTop"></canvas></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Detalhamento por equipamento</h2>
+        <div class="desc">Clique nos cabeçalhos para ordenar. Filtro de unidade abaixo.</div>
+      </div>
+      <div class="filters" id="filters"></div>
+    </div>
+    <div class="table-scroll">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th data-k="item">#</th>
+            <th data-k="sigla">Sigla</th>
+            <th data-k="cod_orc">Centro de Custo</th>
+            <th data-k="setor">Setor</th>
+            <th data-k="tipo_equip">Tipo</th>
+            <th class="num" data-k="valor_loc">Locação (R$)</th>
+            <th class="num" data-k="qtd_copia">Cópias</th>
+            <th class="num" data-k="valor_copias">Impressão (R$)</th>
+            <th class="num" data-k="geral">Total (R$)</th>
+            <th class="num" data-k="pct">% Consumo</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel admin-only" id="historyPanel">
+    <div class="panel-head">
+      <div>
+        <h2>Tabela de uso — histórico completo</h2>
+        <div class="desc">Todas as leituras já coletadas da planilha, mês a mês, todas as unidades. Visível só na área administrativa.</div>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table id="tblHist">
+        <thead>
+          <tr>
+            <th data-k="monthKey">Mês</th>
+            <th data-k="sigla">Sigla</th>
+            <th data-k="cod_orc">Centro de Custo</th>
+            <th data-k="setor">Setor</th>
+            <th data-k="tipo_equip">Tipo</th>
+            <th class="num" data-k="leitura_anterior">Leit. Ant.</th>
+            <th class="num" data-k="leitura_atual">Leit. Atual</th>
+            <th class="num" data-k="qtd_copia">Cópias</th>
+            <th class="num" data-k="valor_copias">Impressão (R$)</th>
+            <th class="num" data-k="valor_loc">Locação (R$)</th>
+            <th class="num" data-k="geral">Total (R$)</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyHist"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer-note" id="footerNote"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="lancTitulo">Lançamento de leituras</h2>
+        <p>A leitura anterior vem automaticamente do último mês salvo. Informe só a leitura atual de cada máquina — igual ao contador do recibo de locação.</p>
+      </div>
+      <button class="close-x" id="btnFechar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="lancBanner"></div>
+      <div class="lanc-head-wrap">
+        <div class="lanc-cols lanc-head-row">
+          <div class="lanc-cell name">Sigla</div>
+          <div class="lanc-cell name">Centro de Custo</div>
+          <div class="lanc-cell num">Leitura Anterior</div>
+          <div class="lanc-cell num">Leitura Atual</div>
+          <div class="lanc-cell num">Cópias</div>
+          <div class="lanc-cell num">Valor (R$)</div>
+        </div>
+      </div>
+      <div class="lanc-scroll" id="lancBody"></div>
+      <div class="lanc-foot-wrap">
+        <div class="lanc-cols lanc-foot-row">
+          <div class="lanc-cell name" style="grid-column:1 / span 4;">Total do mês</div>
+          <div class="lanc-cell num" id="lancTotCopias">—</div>
+          <div class="lanc-cell num" id="lancTotValor">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="note" id="lancStatus"></span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn secondary" id="btnCancelar">Cancelar</button>
+        <button class="btn" id="btnSalvarLanc">Salvar lançamento do mês</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const EQUIP_SEED_RAW = [{"item": 1, "grupo": "SESC RIO BRANCO", "setor": "Gestão de Comunicação Institucional - DPI - Bosque", "cod_orc": "001400160102", "sigla": "GEDPI", "maquina": "C7020", "tipo_equip": "Multifuncional", "valor_loc": 184, "l_ant": 116619, "l_atual": 118129, "valor_unit": 0.38}, {"item": 2, "grupo": "SESC RIO BRANCO", "setor": "Ensino Fundamental - Bosque", "cod_orc": "001600050102", "sigla": "ESCOLA", "maquina": "C306", "tipo_equip": "Multifuncional", "valor_loc": 184, "l_ant": 33238, "l_atual": 35590, "valor_unit": 0.38}, {"item": 3, "grupo": "SESC RIO BRANCO", "setor": "Direção, Coordenação e Supervisão - GDR 2° Andar - Bosque", "cod_orc": "001400050102", "sigla": "GDR", "maquina": "C605", "tipo_equip": "Multifuncional", "valor_loc": 184, "l_ant": 41929, "l_atual": 44200, "valor_unit": 0.38}, {"item": 4, "grupo": "SESC RIO BRANCO", "setor": "Gerência de Manutenção e Obras", "cod_orc": "001400120102", "sigla": "GEA", "maquina": "T120", "tipo_equip": "Impressora A1", "valor_loc": 184, "l_ant": 4150.65, "l_atual": 4305.16, "valor_unit": 0.38}, {"item": 5, "grupo": "SESC RIO BRANCO", "setor": "Contabilidade", "cod_orc": "001400120102", "sigla": "GECON", "maquina": "3320", "tipo_equip": "Impressora", "valor_loc": 80, "l_ant": 259412, "l_atual": 259882, "valor_unit": 0.05}, {"item": 6, "grupo": "SESC RIO BRANCO", "setor": "Direção, Coordenação e Supervisão - Nutrição", "cod_orc": "001600020103", "sigla": "NUTRIÇÃO", "maquina": "3320", "tipo_equip": "Impressora", "valor_loc": 80, "l_ant": 234499, "l_atual": 235967, "valor_unit": 0.05}, {"item": 8, "grupo": "SESC RIO BRANCO", "setor": "Segurança Alimentar e Apoio Social/projeto Mesa Brasil", "cod_orc": "001600100115", "sigla": "MESA BRASIL", "maquina": "3225", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 74807, "l_atual": 75966, "valor_unit": 0.05}, {"item": 9, "grupo": "SESC RIO BRANCO", "setor": "Segurança Alimentar e Apoio Social/projeto Mesa Brasil", "cod_orc": "001600100115", "sigla": "MESA BRASIL", "maquina": "3225", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 87481, "l_atual": 88114, "valor_unit": 0.05}, {"item": 10, "grupo": "SESC RIO BRANCO", "setor": "Ensino Fundamental - Bosque", "cod_orc": "001600050102", "sigla": "ESCOLA", "maquina": "-", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 600849, "l_atual": 605205, "valor_unit": 0.05}, {"item": 11, "grupo": "SESC RIO BRANCO", "setor": "Relacionamento Com Cliente - Bloco de Saúde - Bosque", "cod_orc": "001600120102", "sigla": "CR-ACADEMIA", "maquina": "4070", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 14307, "l_atual": 16609, "valor_unit": 0.05}, {"item": 12, "grupo": "SESC RIO BRANCO", "setor": "Relacionamento com Cliente - Bosque", "cod_orc": "001600120102", "sigla": "CR-BOSQUE", "maquina": "4070", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 455003, "l_atual": 457155, "valor_unit": 0.05}, {"item": 13, "grupo": "SESC RIO BRANCO", "setor": "Serviços Jurídicos - ASSEJUR", "cod_orc": "001400030102", "sigla": "ASSEJUR", "maquina": "3225", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 28736, "l_atual": 29285, "valor_unit": 0.05}, {"item": 14, "grupo": "SESC RIO BRANCO", "setor": "Assessoria de Planejamento e Orçamento 3° Andar - Bosque", "cod_orc": "001400060102", "sigla": "ATP", "maquina": "4070", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 168022, "l_atual": 169009, "valor_unit": 0.05}, {"item": 15, "grupo": "SESC RIO BRANCO", "setor": "Gerência de Gestão de Pessoas 2° Andar - Bosque", "cod_orc": "001400080102", "sigla": "GEPES", "maquina": "M428", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 135427, "l_atual": 137928, "valor_unit": 0.05}, {"item": 16, "grupo": "SESC RIO BRANCO", "setor": "Direção, Coordenação e Supervisão - DAF 2° Andar - Bosque", "cod_orc": "001400070102", "sigla": "DAF", "maquina": "4070", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 292744, "l_atual": 303189, "valor_unit": 0.05}, {"item": 17, "grupo": "SESC RIO BRANCO", "setor": "Gerência de Cultura", "cod_orc": "001500030102", "sigla": "CULTURA", "maquina": "3315", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 100564, "l_atual": 102437, "valor_unit": 0.05}, {"item": 18, "grupo": "SESC RIO BRANCO", "setor": "Odontologia", "cod_orc": "001600140102", "sigla": "ODONTO", "maquina": "M4070FR", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 275343, "l_atual": 275495, "valor_unit": 0.05}, {"item": 19, "grupo": "SESC INTERIOR", "setor": "Unid. De Cultura e Lazer - Senador Guiomard", "cod_orc": "001800020102", "sigla": "ULCA-SEN.GUIOM", "maquina": "HP432", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 102568, "l_atual": 103930, "valor_unit": 0.05}, {"item": 20, "grupo": "SESC INTERIOR", "setor": "Sesc Ler - Xapuri", "cod_orc": "002000010102", "sigla": "SESC - LER - XAPURI", "maquina": "2121", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 237058, "l_atual": 238167, "valor_unit": 0.05}, {"item": 21, "grupo": "SESC INTERIOR", "setor": "Unid. De Cultura e Lazer - Brasileia", "cod_orc": "001700020102", "sigla": "ULCA-BRASILEIA", "maquina": "8085", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 100939, "l_atual": 102020, "valor_unit": 0.05}, {"item": 22, "grupo": "SESC INTERIOR", "setor": "Unid. De Cultura e Lazer - Plácido de Castro", "cod_orc": "001900020102", "sigla": "ULCA PLÁC. CASTRO", "maquina": "4070", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 75131, "l_atual": 76120, "valor_unit": 0.05}, {"item": 23, "grupo": "SESC INTERIOR", "setor": "Sesc Ler - Feijó", "cod_orc": "002100010102", "sigla": "SESC - LER - FEIJÓ", "maquina": "8085", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 105432, "l_atual": 106065, "valor_unit": 0.05}, {"item": 24, "grupo": "SESC C. SUL", "setor": "Gerência da Unidade de Turismo e Lazer CZS", "cod_orc": "002200010102", "sigla": "GUTLA", "maquina": "M4070FR", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 118577, "l_atual": 119402, "valor_unit": 0.05}, {"item": 25, "grupo": "SESC C. SUL", "setor": "Gerência do Hotel - CZS", "cod_orc": "002200020102", "sigla": "GEH", "maquina": "SP4510SF", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 273955, "l_atual": 276699, "valor_unit": 0.05}, {"item": 26, "grupo": "SESC C. SUL", "setor": "Central de Relacionamento CZS", "cod_orc": "002200070102", "sigla": "CR", "maquina": "SP4510SF", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 76535, "l_atual": 77027, "valor_unit": 0.05}, {"item": 27, "grupo": "SESC C. SUL", "setor": "Nutrição CZS", "cod_orc": "002200060103", "sigla": "NUTRIÇÃO", "maquina": "M432", "tipo_equip": "Multifuncional", "valor_loc": 80, "l_ant": 53436, "l_atual": 54345, "valor_unit": 0.05}];
+
+/* Regra de preço por folha: só C7020, C306, C605 e T120 custam 0,38 — o resto custa 0,05.
+   Centralizada aqui para valer em qualquer mês, inclusive nos já lançados. */
+/* Regra de preço confirmada linha a linha contra a planilha Sermatec (Jan–Ago/2026):
+   - Locação: C7020, C306, C605 e T120 = R$ 184; demais = R$ 80 (bate 100% com a planilha)
+   - Valor por folha: C7020, C306 e C605 = R$ 0,38 · T120 = R$ 8,00 (plotter A1, preço bem mais alto
+     por ser impressão de grande formato) · demais = R$ 0,05 */
+const MAQUINAS_038 = new Set(['C7020','C306','C605']);
+const MAQUINAS_LOC_184 = new Set(['C7020','C306','C605','T120']);
+function valorUnitFor(maquina){
+  if(MAQUINAS_038.has(maquina)) return 0.38;
+  if(maquina === 'T120') return 8.0;
+  return 0.05;
+}
+function valorLocFor(maquina){ return MAQUINAS_LOC_184.has(maquina) ? 184 : 80; }
+const EQUIP_SEED = EQUIP_SEED_RAW.map(e => ({ ...e, valor_unit: valorUnitFor(e.maquina), valor_loc: valorLocFor(e.maquina) }));
+const ALL_MONTHS_SEED = {"2026-01": {"1": {"leitura_anterior": 108581, "leitura_atual": 109522}, "2": {"leitura_anterior": 134991, "leitura_atual": 135989}, "3": {"leitura_anterior": 30802, "leitura_atual": 31984}, "4": {"leitura_anterior": 2897.57, "leitura_atual": 3268.94}, "5": {"leitura_anterior": 255693, "leitura_atual": 256224}, "6": {"leitura_anterior": 222541, "leitura_atual": 224190}, "8": {"leitura_anterior": 63640, "leitura_atual": 65265}, "9": {"leitura_anterior": 84258, "leitura_atual": 84673}, "10": {"leitura_anterior": 552158, "leitura_atual": 553942}, "11": {"leitura_anterior": 198566, "leitura_atual": 202756}, "12": {"leitura_anterior": 433293, "leitura_atual": 438942}, "13": {"leitura_anterior": 25257, "leitura_atual": 25707}, "14": {"leitura_anterior": 161304, "leitura_atual": 162295}, "15": {"leitura_anterior": 113523, "leitura_atual": 116856}, "16": {"leitura_anterior": 238265, "leitura_atual": 244893}, "17": {"leitura_anterior": 91172, "leitura_atual": 91555}, "18": {"leitura_anterior": 274439, "leitura_atual": 274574}, "19": {"leitura_anterior": 89848, "leitura_atual": 94259}, "20": {"leitura_anterior": 233388, "leitura_atual": 233388}, "21": {"leitura_anterior": 92657, "leitura_atual": 93247}, "22": {"leitura_anterior": 65116, "leitura_atual": 66534}, "23": {"leitura_anterior": 98788, "leitura_atual": 99605}, "24": {"leitura_anterior": 111793, "leitura_atual": 112689}, "25": {"leitura_anterior": 249073, "leitura_atual": 253478}, "26": {"leitura_anterior": 69497, "leitura_atual": 69994}, "27": {"leitura_anterior": 46619, "leitura_atual": 47788}}, "2026-02": {"1": {"leitura_anterior": 109522, "leitura_atual": 110453}, "2": {"leitura_anterior": 135989, "leitura_atual": 141109}, "3": {"leitura_anterior": 31984, "leitura_atual": 33599}, "4": {"leitura_anterior": 3268.94, "leitura_atual": 3643.9}, "5": {"leitura_anterior": 256224, "leitura_atual": 256597}, "6": {"leitura_anterior": 224190, "leitura_atual": 225713}, "8": {"leitura_anterior": 65265, "leitura_atual": 65265}, "9": {"leitura_anterior": 84673, "leitura_atual": 85073}, "10": {"leitura_anterior": 553942, "leitura_atual": 555017}, "11": {"leitura_anterior": 202756, "leitura_atual": 207794}, "12": {"leitura_anterior": 438942, "leitura_atual": 441498}, "13": {"leitura_anterior": 25707, "leitura_atual": 26012}, "14": {"leitura_anterior": 162295, "leitura_atual": 163166}, "15": {"leitura_anterior": 116856, "leitura_atual": 119146}, "16": {"leitura_anterior": 244893, "leitura_atual": 250830}, "17": {"leitura_anterior": 91555, "leitura_atual": 91894}, "18": {"leitura_anterior": 274574, "leitura_atual": 274706}, "19": {"leitura_anterior": 94259, "leitura_atual": 94259}, "20": {"leitura_anterior": 233388, "leitura_atual": 233993}, "21": {"leitura_anterior": 93247, "leitura_atual": 93934}, "22": {"leitura_anterior": 66534, "leitura_atual": 66881}, "23": {"leitura_anterior": 99605, "leitura_atual": 99907}, "24": {"leitura_anterior": 112689, "leitura_atual": 113331}, "25": {"leitura_anterior": 253478, "leitura_atual": 257354}, "26": {"leitura_anterior": 69994, "leitura_atual": 71066}, "27": {"leitura_anterior": 47788, "leitura_atual": 48565}}, "2026-03": {"1": {"leitura_anterior": 110453, "leitura_atual": 111775}, "2": {"leitura_anterior": 141109, "leitura_atual": 144983}, "3": {"leitura_anterior": 33599, "leitura_atual": 35378}, "4": {"leitura_anterior": 3643.9, "leitura_atual": 3871.08}, "5": {"leitura_anterior": 256597, "leitura_atual": 257190}, "6": {"leitura_anterior": 225713, "leitura_atual": 227536}, "8": {"leitura_anterior": 65265, "leitura_atual": 69432}, "9": {"leitura_anterior": 85073, "leitura_atual": 85663}, "10": {"leitura_anterior": 555017, "leitura_atual": 562125}, "11": {"leitura_anterior": 207794, "leitura_atual": 212209}, "12": {"leitura_anterior": 441498, "leitura_atual": 444608}, "13": {"leitura_anterior": 26012, "leitura_atual": 26513}, "14": {"leitura_anterior": 163166, "leitura_atual": 164211}, "15": {"leitura_anterior": 119146, "leitura_atual": 122739}, "16": {"leitura_anterior": 250830, "leitura_atual": 257715}, "17": {"leitura_anterior": 91894, "leitura_atual": 93686}, "18": {"leitura_anterior": 274706, "leitura_atual": 274836}, "19": {"leitura_anterior": 94259, "leitura_atual": 94259}, "20": {"leitura_anterior": 233993, "leitura_atual": 234535}, "21": {"leitura_anterior": 93934, "leitura_atual": 94723}, "22": {"leitura_anterior": 66881, "leitura_atual": 67592}, "23": {"leitura_anterior": 99907, "leitura_atual": 99907}, "24": {"leitura_anterior": 113331, "leitura_atual": 114214}, "25": {"leitura_anterior": 257354, "leitura_atual": 260512}, "26": {"leitura_anterior": 71066, "leitura_atual": 72635}, "27": {"leitura_anterior": 48565, "leitura_atual": 49907}}, "2026-04": {"1": {"leitura_anterior": 111775, "leitura_atual": 112396}, "2": {"leitura_anterior": 144983, "leitura_atual": 148152}, "3": {"leitura_anterior": 35378, "leitura_atual": 37003}, "4": {"leitura_anterior": 3871.08, "leitura_atual": 3960.82}, "5": {"leitura_anterior": 257190, "leitura_atual": 257611}, "6": {"leitura_anterior": 227536, "leitura_atual": 229418}, "8": {"leitura_anterior": 69432, "leitura_atual": 70924}, "9": {"leitura_anterior": 85663, "leitura_atual": 86036}, "10": {"leitura_anterior": 562125, "leitura_atual": 574606}, "11": {"leitura_anterior": 390, "leitura_atual": 4542}, "12": {"leitura_anterior": 444308, "leitura_atual": 447163}, "13": {"leitura_anterior": 26513, "leitura_atual": 26988}, "14": {"leitura_anterior": 164211, "leitura_atual": 164897}, "15": {"leitura_anterior": 122739, "leitura_atual": 126052}, "16": {"leitura_anterior": 257715, "leitura_atual": 265538}, "17": {"leitura_anterior": 93683, "leitura_atual": 95216}, "18": {"leitura_anterior": 274836, "leitura_atual": 274923}, "19": {"leitura_anterior": 94259, "leitura_atual": 95966}, "20": {"leitura_anterior": 234535, "leitura_atual": 235548}, "21": {"leitura_anterior": 94723, "leitura_atual": 96460}, "22": {"leitura_anterior": 67592, "leitura_atual": 69184}, "23": {"leitura_anterior": 99907, "leitura_atual": 102184}, "24": {"leitura_anterior": 114214, "leitura_atual": 115454}, "25": {"leitura_anterior": 260512, "leitura_atual": 264679}, "26": {"leitura_anterior": 72635, "leitura_atual": 73839}, "27": {"leitura_anterior": 49907, "leitura_atual": 50871}}, "2026-05": {"1": {"leitura_anterior": 112396, "leitura_atual": 113684}, "2": {"leitura_anterior": 9387, "leitura_atual": 16595}, "3": {"leitura_anterior": 37003, "leitura_atual": 38717}, "4": {"leitura_anterior": 3960.82, "leitura_atual": 4021.62}, "5": {"leitura_anterior": 257611, "leitura_atual": 258237}, "6": {"leitura_anterior": 229418, "leitura_atual": 231173}, "8": {"leitura_anterior": 70924, "leitura_atual": 72345}, "9": {"leitura_anterior": 86036, "leitura_atual": 86491}, "10": {"leitura_anterior": 574606, "leitura_atual": 580848}, "11": {"leitura_anterior": 4542, "leitura_atual": 8044}, "12": {"leitura_anterior": 447163, "leitura_atual": 449788}, "13": {"leitura_anterior": 26988, "leitura_atual": 27663}, "14": {"leitura_anterior": 164897, "leitura_atual": 165919}, "15": {"leitura_anterior": 126052, "leitura_atual": 128800}, "16": {"leitura_anterior": 265538, "leitura_atual": 272693}, "17": {"leitura_anterior": 95216, "leitura_atual": 97327}, "18": {"leitura_anterior": 274923, "leitura_atual": 275119}, "19": {"leitura_anterior": 95966, "leitura_atual": 98005}, "20": {"leitura_anterior": 235548, "leitura_atual": 236393}, "21": {"leitura_anterior": 96460, "leitura_atual": 98135}, "22": {"leitura_anterior": 69184, "leitura_atual": 71325}, "23": {"leitura_anterior": 102184, "leitura_atual": 103431}, "24": {"leitura_anterior": 115454, "leitura_atual": 116587}, "25": {"leitura_anterior": 264679, "leitura_atual": 267405}, "26": {"leitura_anterior": 73839, "leitura_atual": 74767}, "27": {"leitura_anterior": 50871, "leitura_atual": 51600}}, "2026-06": {"1": {"leitura_anterior": 113684, "leitura_atual": 115624}, "2": {"leitura_anterior": 16595, "leitura_atual": 28270}, "3": {"leitura_anterior": 38717, "leitura_atual": 40553}, "4": {"leitura_anterior": 4021.62, "leitura_atual": 4138.08}, "5": {"leitura_anterior": 258237, "leitura_atual": 259021}, "6": {"leitura_anterior": 231173, "leitura_atual": 233016}, "8": {"leitura_anterior": 72345, "leitura_atual": 73541}, "9": {"leitura_anterior": 86491, "leitura_atual": 87040}, "10": {"leitura_anterior": 580848, "leitura_atual": 596740}, "11": {"leitura_anterior": 8044, "leitura_atual": 11643}, "12": {"leitura_anterior": 449788, "leitura_atual": 452772}, "13": {"leitura_anterior": 27663, "leitura_atual": 28446}, "14": {"leitura_anterior": 165919, "leitura_atual": 167383}, "15": {"leitura_anterior": 128800, "leitura_atual": 132051}, "16": {"leitura_anterior": 272693, "leitura_atual": 284942}, "17": {"leitura_anterior": 97327, "leitura_atual": 99944}, "18": {"leitura_anterior": 275119, "leitura_atual": 275264}, "19": {"leitura_anterior": 98005, "leitura_atual": 100469}, "20": {"leitura_anterior": 236393, "leitura_atual": 237058}, "21": {"leitura_anterior": 98135, "leitura_atual": 99535}, "22": {"leitura_anterior": 71325, "leitura_atual": 73307}, "23": {"leitura_anterior": 103431, "leitura_atual": 104543}, "24": {"leitura_anterior": 116587, "leitura_atual": 117626}, "25": {"leitura_anterior": 267405, "leitura_atual": 270594}, "26": {"leitura_anterior": 74767, "leitura_atual": 75835}, "27": {"leitura_anterior": 51600, "leitura_atual": 52392}}, "2026-07": {"1": {"leitura_anterior": 115624, "leitura_atual": 116619}, "2": {"leitura_anterior": 28270, "leitura_atual": 33238}, "3": {"leitura_anterior": 40553, "leitura_atual": 41929}, "4": {"leitura_anterior": 4138.08, "leitura_atual": 4150.65}, "5": {"leitura_anterior": 259021, "leitura_atual": 259412}, "6": {"leitura_anterior": 233016, "leitura_atual": 234499}, "8": {"leitura_anterior": 73541, "leitura_atual": 74807}, "9": {"leitura_anterior": 87040, "leitura_atual": 87481}, "10": {"leitura_anterior": 596740, "leitura_atual": 600849}, "11": {"leitura_anterior": 11643, "leitura_atual": 14307}, "12": {"leitura_anterior": 452772, "leitura_atual": 455003}, "13": {"leitura_anterior": 28446, "leitura_atual": 28736}, "14": {"leitura_anterior": 167383, "leitura_atual": 168022}, "15": {"leitura_anterior": 132051, "leitura_atual": 135427}, "16": {"leitura_anterior": 284942, "leitura_atual": 292744}, "17": {"leitura_anterior": 99944, "leitura_atual": 100564}, "18": {"leitura_anterior": 275264, "leitura_atual": 275343}, "19": {"leitura_anterior": 100469, "leitura_atual": 102568}, "20": {"leitura_anterior": 237058, "leitura_atual": 237058}, "21": {"leitura_anterior": 99535, "leitura_atual": 100939}, "22": {"leitura_anterior": 73307, "leitura_atual": 75131}, "23": {"leitura_anterior": 104543, "leitura_atual": 105432}, "24": {"leitura_anterior": 117626, "leitura_atual": 118577}, "25": {"leitura_anterior": 270594, "leitura_atual": 273955}, "26": {"leitura_anterior": 75835, "leitura_atual": 76535}, "27": {"leitura_anterior": 52392, "leitura_atual": 53436}}, "2026-08": {"1": {"leitura_anterior": 116619, "leitura_atual": 118129}, "2": {"leitura_anterior": 33238, "leitura_atual": 35590}, "3": {"leitura_anterior": 41929, "leitura_atual": 44200}, "4": {"leitura_anterior": 4150.65, "leitura_atual": 4305.16}, "5": {"leitura_anterior": 259412, "leitura_atual": 259882}, "6": {"leitura_anterior": 234499, "leitura_atual": 235967}, "8": {"leitura_anterior": 74807, "leitura_atual": 75966}, "9": {"leitura_anterior": 87481, "leitura_atual": 88114}, "10": {"leitura_anterior": 600849, "leitura_atual": 605205}, "11": {"leitura_anterior": 14307, "leitura_atual": 16609}, "12": {"leitura_anterior": 455003, "leitura_atual": 457155}, "13": {"leitura_anterior": 28736, "leitura_atual": 29285}, "14": {"leitura_anterior": 168022, "leitura_atual": 169009}, "15": {"leitura_anterior": 135427, "leitura_atual": 137928}, "16": {"leitura_anterior": 292744, "leitura_atual": 303189}, "17": {"leitura_anterior": 100564, "leitura_atual": 102437}, "18": {"leitura_anterior": 275343, "leitura_atual": 275495}, "19": {"leitura_anterior": 102568, "leitura_atual": 103930}, "20": {"leitura_anterior": 237058, "leitura_atual": 238167}, "21": {"leitura_anterior": 100939, "leitura_atual": 102020}, "22": {"leitura_anterior": 75131, "leitura_atual": 76120}, "23": {"leitura_anterior": 105432, "leitura_atual": 106065}, "24": {"leitura_anterior": 118577, "leitura_atual": 119402}, "25": {"leitura_anterior": 273955, "leitura_atual": 276699}, "26": {"leitura_anterior": 76535, "leitura_atual": 77027}, "27": {"leitura_anterior": 53436, "leitura_atual": 54345}}};
+const SEED_MONTHS = Object.keys(ALL_MONTHS_SEED).sort();
+const SEED_MONTH = SEED_MONTHS[SEED_MONTHS.length-1];
+
+const fmtR = n => 'R$ ' + (n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtN = n => (n||0).toLocaleString('pt-BR',{maximumFractionDigits:0});
+const MESES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+function monthLabel(key){ const [y,m] = key.split('-').map(Number); return MESES_PT[m-1]+'/'+y; }
+function nextMonthKey(key){ let [y,m] = key.split('-').map(Number); m++; if(m>12){m=1;y++;} return y+'-'+String(m).padStart(2,'0'); }
+
+function tagFor(tipo){
+  if(tipo==='Multifuncional') return `<span class="tag multi">Multifuncional</span>`;
+  if(tipo==='Impressora A1') return `<span class="tag a1">Impressora A1</span>`;
+  return `<span class="tag simples">Impressora</span>`;
+}
+function banner(msg, kind){ return `<div class="banner ${kind}">${msg}</div>`; }
+
+let db = null, downloads = null, userCap = null, canWrite = true;
+let equipList = EQUIP_SEED.slice();
+let months = SEED_MONTHS.slice();
+let currentMonth = SEED_MONTH;
+let readingsByMonth = JSON.parse(JSON.stringify(ALL_MONTHS_SEED));
+let currentGrupo = 'Todos';
+let sortKey = 'geral', sortDir = -1;
+
+function seedReadings(){
+  // fallback: leituras do último mês semente, usado só se algum mês pedido não existir em lugar nenhum
+  const r = {};
+  EQUIP_SEED.forEach(e=>{ r[e.item] = { leitura_anterior: e.l_ant, leitura_atual: e.l_atual }; });
+  return r;
+}
+
+function rowsForMonth(monthKey){
+  const readings = readingsByMonth[monthKey] || {};
+  return equipList.map(e=>{
+    const rd = readings[e.item] || { leitura_anterior: e.l_ant, leitura_atual: e.l_ant };
+    const qtd = Math.max(0, rd.leitura_atual - rd.leitura_anterior);
+    const valor_copias = qtd * e.valor_unit;
+    const geral = valor_copias + e.valor_loc;
+    return {
+      item: e.item, grupo: e.grupo, setor: e.setor, cod_orc: e.cod_orc, sigla: e.sigla,
+      maquina: e.maquina, tipo_equip: e.tipo_equip, valor_loc: e.valor_loc, valor_unit: e.valor_unit,
+      leitura_anterior: rd.leitura_anterior, leitura_atual: rd.leitura_atual,
+      qtd_copia: qtd, valor_copias, geral, pct: 0
+    };
+  });
+}
+function withPct(rows){
+  const tot = rows.reduce((s,d)=>s+d.geral,0) || 1;
+  rows.forEach(d=> d.pct = Math.round(d.geral/tot*1000)/10 );
+  return rows;
+}
+function filtered(){
+  const rows = withPct(rowsForMonth(currentMonth));
+  return currentGrupo==='Todos' ? rows : rows.filter(d=>d.grupo===currentGrupo);
+}
+
+/* ---------------- versão standalone: localStorage no lugar do banco do Claude ---------------- */
+const LS_KEY = 'getic_dashboard_v1';
+
+function lsLoadStore(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return { equipamentos:{}, leituras:{}, meses:{} };
+    const parsed = JSON.parse(raw);
+    return { equipamentos: parsed.equipamentos||{}, leituras: parsed.leituras||{}, meses: parsed.meses||{} };
+  }catch(e){ console.error('Falha ao ler localStorage', e); return { equipamentos:{}, leituras:{}, meses:{} }; }
+}
+function lsSaveStore(store){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(store)); return true; }
+  catch(e){ console.error('Falha ao salvar no localStorage', e); return false; }
+}
+
+function makeLocalDb(){
+  const store = lsLoadStore();
+  function collection(name){
+    if(!store[name]) store[name] = {};
+    return {
+      async get(){
+        const docs = Object.keys(store[name]).map(id => ({ id, data: () => store[name][id] }));
+        return { empty: docs.length===0, docs };
+      },
+      doc(id){
+        return {
+          id,
+          async get(){ const exists = Object.prototype.hasOwnProperty.call(store[name], id); return { exists, data: () => store[name][id] }; },
+          async set(data){ store[name][id] = { ...data }; lsSaveStore(store); },
+          async update(data){ store[name][id] = { ...(store[name][id]||{}), ...data }; lsSaveStore(store); },
+          async delete(){ delete store[name][id]; lsSaveStore(store); }
+        };
+      },
+      where(field, op, value){
+        const all = Object.keys(store[name]).map(id => ({ id, data: () => store[name][id] }));
+        const filtered = all.filter(d => {
+          const v = d.data()[field];
+          if(op==='=='||op==='eq') return v===value;
+          if(op==='!=') return v!==value;
+          return true;
+        });
+        return { async get(){ return { empty: filtered.length===0, docs: filtered }; } };
+      },
+      orderBy(field, dir){
+        const all = Object.keys(store[name]).map(id => ({ id, data: () => store[name][id] }));
+        all.sort((a,b)=>{
+          const av=a.data()[field], bv=b.data()[field];
+          const cmp = av<bv?-1:(av>bv?1:0);
+          return dir==='desc' ? -cmp : cmp;
+        });
+        return { async get(){ return { empty: all.length===0, docs: all }; } };
+      }
+    };
+  }
+  return { collection };
+}
+
+function makeLocalDownloads(){
+  return {
+    async save({ filename, data }){
+      let blob;
+      if(data instanceof Blob){ blob = data; }
+      else if(typeof data === 'string'){ blob = new Blob([data], { type:'text/plain;charset=utf-8' }); }
+      else { blob = new Blob([data]); }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url), 4000);
+      return { status:'saved' };
+    }
+  };
+}
+
+async function initCapabilities(){
+  db = makeLocalDb();
+  downloads = makeLocalDownloads();
+  userCap = null;
+  canWrite = true;
+
+  const noteEl = document.getElementById('dbNote');
+  noteEl.textContent = 'Versão independente — os dados ficam salvos neste navegador (localStorage), não são compartilhados com mais ninguém.';
+
+  await loadFromDb();
+  renderAll();
+}
+
+async function loadFromDb(){
+  try{
+    const eqSnap = await db.collection('equipamentos').get();
+    if(eqSnap.empty){
+      await Promise.all(EQUIP_SEED.map(e => db.collection('equipamentos').doc(String(e.item)).set(e)));
+      // semeia o histórico real (um mês por vez, para não estourar o limite de escritas simultâneas)
+      for(const mk of SEED_MONTHS){
+        const readings = ALL_MONTHS_SEED[mk];
+        await Promise.all(Object.keys(readings).map(itemStr => db.collection('leituras').doc(mk+'_'+itemStr).set({
+          monthKey: mk, item: Number(itemStr), leitura_anterior: readings[itemStr].leitura_anterior, leitura_atual: readings[itemStr].leitura_atual, savedAt: new Date().toISOString()
+        })));
+        await db.collection('meses').doc(mk).set({ monthKey: mk, label: monthLabel(mk), createdAt: new Date().toISOString() });
+      }
+    } else {
+      equipList = eqSnap.docs.map(d=>d.data());
+      equipList.sort((a,b)=>a.item-b.item);
+      // autocorreção: garante que a regra de preço por máquina (locação e valor por folha) esteja sempre em vigor,
+      // mesmo em cadastros salvos antes do ajuste.
+      const corrigir = equipList.filter(e => e.valor_unit !== valorUnitFor(e.maquina) || e.valor_loc !== valorLocFor(e.maquina));
+      if(corrigir.length){
+        equipList = equipList.map(e => ({ ...e, valor_unit: valorUnitFor(e.maquina), valor_loc: valorLocFor(e.maquina) }));
+        try{
+          await Promise.all(corrigir.map(e => db.collection('equipamentos').doc(String(e.item)).update({ valor_unit: valorUnitFor(e.maquina), valor_loc: valorLocFor(e.maquina) })));
+        }catch(e){ console.error('Falha ao corrigir valores salvos', e); }
+      }
+    }
+
+    const mesesSnap = await db.collection('meses').orderBy('monthKey','asc').get();
+    if(!mesesSnap.empty){
+      months = mesesSnap.docs.map(d=>d.id);
+    }
+
+    // migração: completa no banco qualquer mês do histórico real (SEED_MONTHS) que ainda não
+    // tenha sido lançado por este artifact, sem tocar em meses que o usuário já lançou/editou.
+    const faltantesHistorico = SEED_MONTHS.filter(mk => !months.includes(mk));
+    if(faltantesHistorico.length){
+      for(const mk of faltantesHistorico){
+        const readings = ALL_MONTHS_SEED[mk];
+        await Promise.all(Object.keys(readings).map(itemStr => db.collection('leituras').doc(mk+'_'+itemStr).set({
+          monthKey: mk, item: Number(itemStr), leitura_anterior: readings[itemStr].leitura_anterior, leitura_atual: readings[itemStr].leitura_atual, savedAt: new Date().toISOString()
+        })));
+        await db.collection('meses').doc(mk).set({ monthKey: mk, label: monthLabel(mk), createdAt: new Date().toISOString() });
+      }
+      const mesesSnap2 = await db.collection('meses').orderBy('monthKey','asc').get();
+      months = mesesSnap2.docs.map(d=>d.id);
+    }
+
+    readingsByMonth = {};
+    for(const mk of months){
+      const snap = await db.collection('leituras').where('monthKey','==',mk).get();
+      const r = {};
+      snap.docs.forEach(d=>{ const v=d.data(); r[v.item] = { leitura_anterior:v.leitura_anterior, leitura_atual:v.leitura_atual }; });
+      readingsByMonth[mk] = r;
+    }
+    currentMonth = months[months.length-1] || SEED_MONTH;
+  }catch(e){
+    console.error('Falha ao ler banco do artifact', e);
+    document.getElementById('banners').innerHTML = banner('Não foi possível carregar os dados salvos agora. Mostrando o mês semente.', 'warn');
+  }
+}
+
+function renderYearSelect(){
+  const yearSel = document.getElementById('yearSelect');
+  const years = Array.from(new Set(months.map(mk=>mk.split('-')[0])));
+  const curYear = currentMonth.split('-')[0];
+  if(!years.includes(curYear)) years.push(curYear);
+  years.sort();
+  yearSel.innerHTML = years.map(y=>`<option value="${y}"${y===curYear?' selected':''}>${y}</option>`).join('');
+}
+document.getElementById('yearSelect').addEventListener('change', (e)=>{
+  const newYear = e.target.value;
+  const monthPart = currentMonth.split('-')[1];
+  const candidate = newYear+'-'+monthPart;
+  currentMonth = months.includes(candidate) ? candidate : (months.find(mk=>mk.startsWith(newYear+'-')) || candidate);
+  renderAll();
+});
+
+function renderMonthSelect(){
+  renderYearSelect();
+  const sel = document.getElementById('monthSelect');
+  const year = currentMonth.split('-')[0];
+  let opts = '';
+  for(let m=1;m<=12;m++){
+    const mk = year+'-'+String(m).padStart(2,'0');
+    const has = months.includes(mk);
+    const sel_attr = mk===currentMonth ? ' selected' : '';
+    const dis_attr = has ? '' : ' disabled';
+    const label = MESES_PT[m-1] + (has ? '' : ' (sem dados)');
+    opts += `<option value="${mk}"${sel_attr}${dis_attr}>${label}</option>`;
+  }
+  sel.innerHTML = opts;
+}
+document.getElementById('monthSelect').addEventListener('change', (e)=>{
+  currentMonth = e.target.value;
+  renderAll();
+});
+
+function renderFilters(){
+  const grupos = ['Todos', ...Array.from(new Set(equipList.map(e=>e.grupo)))];
+  const el = document.getElementById('filters');
+  el.innerHTML = grupos.map(g=>`<button class="pill" style="padding:5px 12px;font-size:12px;border-color:var(--panel-border);color:var(--text-dim);background:var(--bg);" data-g="${g}">${g==='Todos'?'Todas as unidades':g}</button>`).join('');
+  el.querySelectorAll('button').forEach(b=>{
+    if(b.dataset.g===currentGrupo){ b.style.background='var(--navy)'; b.style.color='#fff'; b.style.borderColor='var(--navy)'; }
+    b.addEventListener('click',()=>{ currentGrupo=b.dataset.g; renderAll(); });
+  });
+}
+
+function renderKpis(){
+  const rows = filtered();
+  const geral = rows.reduce((s,d)=>s+d.geral,0);
+  const impr = rows.reduce((s,d)=>s+d.valor_copias,0);
+  const loc = rows.reduce((s,d)=>s+d.valor_loc,0);
+  const cop = rows.reduce((s,d)=>s+d.qtd_copia,0);
+  const el = document.getElementById('kpis');
+  el.innerHTML = `
+    <div class="kpi k-geral"><div class="lbl">Custo total do mês</div><div class="val">${fmtR(geral)}</div><div class="sub">locação + impressão</div></div>
+    <div class="kpi k-impr"><div class="lbl">Custo com impressão</div><div class="val">${fmtR(impr)}</div><div class="sub">${geral?(impr/geral*100).toFixed(1):'0'}% do total</div></div>
+    <div class="kpi k-loc"><div class="lbl">Custo com locação</div><div class="val">${fmtR(loc)}</div><div class="sub">${geral?(loc/geral*100).toFixed(1):'0'}% do total</div></div>
+    <div class="kpi k-eq"><div class="lbl">Equipamentos ativos</div><div class="val">${rows.length}</div><div class="sub">${new Set(rows.map(d=>d.grupo)).size} unidade(s)</div></div>
+    <div class="kpi k-cop"><div class="lbl">Cópias/impressões</div><div class="val">${fmtN(cop)}</div><div class="sub">custo médio ${cop?fmtR(impr/cop):'R$ 0,00'}/cópia</div></div>
+  `;
+}
+
+/* Valores mensais estimados do Contrato AC-2022-CS-003 (SERMATEC), cláusula Terceira - Do Preço:
+   Impressão: itens 01+02+03 = 3.250,00 + 760,00 + 800,00 = 4.810,00
+   Locação:   itens 04+05+06+07 = 1.360,00 + 552,00 + 184,00 + 160,00 = 2.256,00 */
+const CONTRATO_MENSAL = { impressao: 4810.00, locacao: 2496.00 }; // locação suplementada por aditivo
+/* Total anual do Contrato AC-2022-CS-003, confirmado pelo usuário: R$ 84.792,00 (= 12 x mensal) */
+const CONTRATO_ANUAL = { impressao: 57720.00, locacao: 29952.00, total: 87672.00 }; // locação suplementada por aditivo (29.952,00/ano)
+
+function renderContractKpis(){
+  // acumulado desde o início do contrato (soma de todos os meses já lançados)
+  let acumImpr = 0, acumLoc = 0;
+  months.forEach(mk=>{
+    rowsForMonth(mk).forEach(d=>{ acumImpr += d.valor_copias; acumLoc += d.valor_loc; });
+  });
+  const saldoImpr = CONTRATO_ANUAL.impressao - acumImpr;
+  const saldoLoc = CONTRATO_ANUAL.locacao - acumLoc;
+  const el = document.getElementById('contractKpis');
+  el.innerHTML = `
+    <div class="ckpi"><div class="lbl">Valor total (Impressões)</div><div class="val">${fmtR(CONTRATO_ANUAL.impressao)}</div><div class="sub">contrato anual</div></div>
+    <div class="ckpi"><div class="lbl">Valor total (Locação)</div><div class="val">${fmtR(CONTRATO_ANUAL.locacao)}</div><div class="sub">contrato anual</div></div>
+    <div class="ckpi ${saldoImpr>=0?'ok':'warn'}"><div class="lbl">Saldo Impressão</div><div class="val">${fmtR(saldoImpr)}</div><div class="sub">${saldoImpr>=0?'restante a consumir':'já ultrapassou em '+fmtR(Math.abs(saldoImpr))} · gasto ${fmtR(acumImpr)}</div></div>
+    <div class="ckpi ${saldoLoc>=0?'ok':'warn'}"><div class="lbl">Saldo Locação</div><div class="val">${fmtR(saldoLoc)}</div><div class="sub">${saldoLoc>=0?'restante a consumir':'já ultrapassou em '+fmtR(Math.abs(saldoLoc))} · gasto ${fmtR(acumLoc)}</div></div>
+  `;
+}
+
+let charts = {};
+function destroy(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+const HAS_CHART = typeof Chart !== 'undefined';
+if(HAS_CHART){
+  Chart.defaults.font.family = "'IBM Plex Sans', system-ui, sans-serif";
+  Chart.defaults.font.size = 11.5;
+}
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function renderChartSetor(){
+  const box = document.getElementById('chartSetor').parentElement;
+  if(!HAS_CHART){ box.innerHTML = '<div class="chart-fallback">Gráfico indisponível nesta visualização.</div>'; return; }
+  const rows = [...filtered()].sort((a,b)=>b.geral-a.geral).slice(0,10);
+  destroy('setor');
+  charts.setor = new Chart(document.getElementById('chartSetor'), {
+    type:'bar',
+    data:{ labels: rows.map(d=>d.sigla), datasets:[{ data: rows.map(d=>d.geral), backgroundColor:cssVar('--accent'), borderRadius:4, maxBarThickness:22 }] },
+    options:{ indexAxis:'y', plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>fmtR(c.raw)}}},
+      scales:{ x:{grid:{color:cssVar('--grid')}, ticks:{callback:v=>'R$'+v}}, y:{grid:{display:false}} } }
+  });
+}
+function renderChartTipo(){
+  const box = document.getElementById('chartTipo').parentElement;
+  if(!HAS_CHART){ box.innerHTML = '<div class="chart-fallback">Gráfico indisponível nesta visualização.</div>'; return; }
+  const rows = filtered();
+  const byTipo = {}; rows.forEach(d=>{ byTipo[d.tipo_equip] = (byTipo[d.tipo_equip]||0) + d.geral; });
+  const labels = Object.keys(byTipo);
+  destroy('tipo');
+  charts.tipo = new Chart(document.getElementById('chartTipo'), {
+    type:'doughnut',
+    data:{ labels, datasets:[{ data: labels.map(l=>byTipo[l]), backgroundColor:[cssVar('--accent'),cssVar('--amber'),cssVar('--teal'),cssVar('--purple')], borderWidth:2, borderColor: cssVar('--panel') }] },
+    options:{ cutout:'62%', plugins:{legend:{position:'bottom', labels:{boxWidth:10,boxHeight:10,padding:14}}, tooltip:{callbacks:{label:c=>c.label+': '+fmtR(c.raw)}}} }
+  });
+}
+function renderChartUnidade(){
+  const box = document.getElementById('chartUnidade').parentElement;
+  if(!HAS_CHART){ box.innerHTML = '<div class="chart-fallback">Gráfico indisponível nesta visualização.</div>'; return; }
+  const rows = withPct(rowsForMonth(currentMonth));
+  const byGrupo = {}; rows.forEach(d=>{ byGrupo[d.grupo] = (byGrupo[d.grupo]||0) + d.geral; });
+  const labels = Object.keys(byGrupo);
+  destroy('unidade');
+  charts.unidade = new Chart(document.getElementById('chartUnidade'), {
+    type:'bar',
+    data:{ labels, datasets:[{ data: labels.map(l=>byGrupo[l]), backgroundColor: labels.map(l=> l===currentGrupo || currentGrupo==='Todos' ? cssVar('--teal') : cssVar('--muted')), borderRadius:4, maxBarThickness:46 }] },
+    options:{ plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>fmtR(c.raw)}}}, scales:{ x:{grid:{display:false}}, y:{grid:{color:cssVar('--grid')}, ticks:{callback:v=>'R$'+v}} } }
+  });
+}
+function renderChartTop(){
+  const box = document.getElementById('chartTop').parentElement;
+  if(!HAS_CHART){ box.innerHTML = '<div class="chart-fallback">Gráfico indisponível nesta visualização.</div>'; return; }
+  const rows = [...filtered()].sort((a,b)=>b.pct-a.pct).slice(0,8);
+  destroy('top');
+  charts.top = new Chart(document.getElementById('chartTop'), {
+    type:'bar',
+    data:{ labels: rows.map(d=>d.sigla), datasets:[{ data: rows.map(d=>d.pct), backgroundColor:cssVar('--amber'), borderRadius:4, maxBarThickness:20 }] },
+    options:{ indexAxis:'y', plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>c.raw+'%'}}}, scales:{ x:{grid:{color:cssVar('--grid')}, ticks:{callback:v=>v+'%'}}, y:{grid:{display:false}} } }
+  });
+}
+
+function renderTable(){
+  let rows = [...filtered()];
+  rows.sort((a,b)=>{ const av=a[sortKey], bv=b[sortKey]; if(typeof av==='string') return sortDir*av.localeCompare(bv); return sortDir*(av-bv); });
+  const maxPct = Math.max(1, ...withPct(rowsForMonth(currentMonth)).map(d=>d.pct));
+  document.getElementById('tbody').innerHTML = rows.map(d=>`
+    <tr>
+      <td>${d.item}</td>
+      <td class="name">${d.sigla}</td>
+      <td class="cc">${d.cod_orc}</td>
+      <td class="name">${d.setor}</td>
+      <td>${tagFor(d.tipo_equip)}</td>
+      <td class="num">${fmtR(d.valor_loc)}</td>
+      <td class="num">${fmtN(d.qtd_copia)}</td>
+      <td class="num">${fmtR(d.valor_copias)}</td>
+      <td class="num">${fmtR(d.geral)}</td>
+      <td class="num"><span class="barcell"><i style="width:${(d.pct/maxPct*100).toFixed(0)}%"></i></span>${d.pct}%</td>
+    </tr>
+  `).join('');
+}
+document.querySelectorAll('#tbl thead th').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const k = th.dataset.k;
+    if(sortKey===k){ sortDir*=-1; } else { sortKey=k; sortDir = (k==='sigla'||k==='setor'||k==='tipo_equip'||k==='cod_orc')?1:-1; }
+    renderTable();
+  });
+});
+
+let sortKeyHist = 'monthKey', sortDirHist = -1;
+function renderHistoryTable(){
+  let rows = [];
+  months.forEach(mk=>{
+    rowsForMonth(mk).forEach(d=>{ rows.push({ ...d, monthKey: mk, monthLabel: monthLabel(mk) }); });
+  });
+  rows.forEach(d=>{ d.pct = 0; });
+  rows.sort((a,b)=>{
+    const av=a[sortKeyHist], bv=b[sortKeyHist];
+    if(typeof av==='string') return sortDirHist*String(av).localeCompare(String(bv));
+    return sortDirHist*((av||0)-(bv||0));
+  });
+  document.getElementById('tbodyHist').innerHTML = rows.map(d=>`
+    <tr>
+      <td>${d.monthLabel}</td>
+      <td class="name">${d.sigla}</td>
+      <td class="cc">${d.cod_orc}</td>
+      <td class="name">${d.setor}</td>
+      <td>${tagFor(d.tipo_equip)}</td>
+      <td class="num">${fmtN(d.leitura_anterior)}</td>
+      <td class="num">${fmtN(d.leitura_atual)}</td>
+      <td class="num">${fmtN(d.qtd_copia)}</td>
+      <td class="num">${fmtR(d.valor_copias)}</td>
+      <td class="num">${fmtR(d.valor_loc)}</td>
+      <td class="num">${fmtR(d.geral)}</td>
+    </tr>
+  `).join('');
+}
+document.querySelectorAll('#tblHist thead th').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const k = th.dataset.k;
+    if(sortKeyHist===k){ sortDirHist*=-1; } else { sortKeyHist=k; sortDirHist = (k==='sigla'||k==='setor'||k==='tipo_equip'||k==='cod_orc'||k==='monthKey')?1:-1; }
+    renderHistoryTable();
+  });
+});
+
+function renderFooter(){
+  document.getElementById('footerNote').textContent =
+    `Mês de referência: ${monthLabel(currentMonth)} · Fonte inicial: planilha_de_impressão.xlsx (semente Agosto/2026) · Centro de custo = COD. ORÇ. da planilha.`;
+}
+
+function renderAll(){
+  renderMonthSelect();
+  renderFilters();
+  renderKpis();
+  renderContractKpis();
+  renderTable();
+  renderHistoryTable();
+  renderFooter();
+  try{ renderChartSetor(); renderChartTipo(); renderChartUnidade(); renderChartTop(); }
+  catch(e){ console.error('Falha ao desenhar gráficos', e); }
+}
+
+const overlay = document.getElementById('overlay');
+let lancMonthKey = null, lancRows = [];
+
+function openLanc(){
+  if(!db || !canWrite) return;
+  lancMonthKey = nextMonthKey(months[months.length-1] || SEED_MONTH);
+  const prevMonth = months[months.length-1] || SEED_MONTH;
+  const prevReadings = readingsByMonth[prevMonth] || seedReadings();
+  lancRows = equipList.map(e=>({
+    item:e.item, sigla:e.sigla, cod_orc:e.cod_orc, valor_unit:e.valor_unit,
+    leitura_anterior: (prevReadings[e.item] ? prevReadings[e.item].leitura_atual : e.l_atual),
+    leitura_atual: null
+  }));
+  document.getElementById('lancTitulo').textContent = 'Lançamento de leituras — ' + monthLabel(lancMonthKey);
+  document.getElementById('lancBanner').innerHTML = '';
+  document.getElementById('lancStatus').textContent = '';
+  renderLancTable();
+  overlay.classList.add('open');
+}
+function closeLanc(){ overlay.classList.remove('open'); }
+
+function renderLancTable(){
+  document.getElementById('lancBody').innerHTML = lancRows.map((r,i)=>`
+    <div class="lanc-cols lanc-row">
+      <div class="lanc-cell name">${r.sigla}</div>
+      <div class="lanc-cell name">${r.cod_orc}</div>
+      <div class="lanc-cell num">${fmtN(r.leitura_anterior)}</div>
+      <div class="lanc-cell num"><input type="number" step="0.01" min="0" data-i="${i}" class="input-atual" placeholder="${fmtN(r.leitura_anterior)}"></div>
+      <div class="lanc-cell num" id="lanc-qtd-${i}">0</div>
+      <div class="lanc-cell num" id="lanc-val-${i}">R$ 0,00</div>
+    </div>
+  `).join('');
+  document.querySelectorAll('.input-atual').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const i = Number(inp.dataset.i);
+      const val = inp.value==='' ? null : parseFloat(inp.value);
+      lancRows[i].leitura_atual = val;
+      updateLancRow(i);
+      updateLancTotals();
+    });
+  });
+  updateLancTotals();
+}
+function updateLancRow(i){
+  const r = lancRows[i];
+  const atual = r.leitura_atual==null ? r.leitura_anterior : r.leitura_atual;
+  const qtd = Math.max(0, atual - r.leitura_anterior);
+  const val = qtd * r.valor_unit;
+  document.getElementById('lanc-qtd-'+i).textContent = fmtN(qtd);
+  document.getElementById('lanc-val-'+i).textContent = fmtR(val);
+}
+function updateLancTotals(){
+  let totQtd=0, totVal=0;
+  lancRows.forEach(r=>{
+    const atual = r.leitura_atual==null ? r.leitura_anterior : r.leitura_atual;
+    const qtd = Math.max(0, atual - r.leitura_anterior);
+    totQtd += qtd; totVal += qtd*r.valor_unit;
+  });
+  document.getElementById('lancTotCopias').textContent = fmtN(totQtd);
+  document.getElementById('lancTotValor').textContent = fmtR(totVal);
+}
+
+async function salvarLancamento(){
+  const faltando = lancRows.filter(r=>r.leitura_atual==null);
+  const invalidas = lancRows.filter(r=>r.leitura_atual!=null && r.leitura_atual < r.leitura_anterior);
+  if(faltando.length){
+    document.getElementById('lancBanner').innerHTML = banner(`Faltam ${faltando.length} leitura(s) atual(is) para salvar o mês inteiro.`, 'warn');
+    return;
+  }
+  if(invalidas.length){
+    document.getElementById('lancBanner').innerHTML = banner(`${invalidas.length} leitura(s) atual(is) menor(es) que a anterior — confira antes de salvar.`, 'err');
+    return;
+  }
+  document.getElementById('btnSalvarLanc').disabled = true;
+  document.getElementById('lancStatus').textContent = 'Salvando…';
+  try{
+    await Promise.all(lancRows.map(r => db.collection('leituras').doc(lancMonthKey+'_'+r.item).set({
+      monthKey: lancMonthKey, item: r.item, leitura_anterior: r.leitura_anterior, leitura_atual: r.leitura_atual, savedAt: new Date().toISOString()
+    })));
+    await db.collection('meses').doc(lancMonthKey).set({ monthKey: lancMonthKey, label: monthLabel(lancMonthKey), createdAt: new Date().toISOString() });
+
+    months.push(lancMonthKey);
+    const r = {}; lancRows.forEach(x=>{ r[x.item] = { leitura_anterior:x.leitura_anterior, leitura_atual:x.leitura_atual }; });
+    readingsByMonth[lancMonthKey] = r;
+    currentMonth = lancMonthKey;
+
+    document.getElementById('lancStatus').textContent = 'Salvo!';
+    setTimeout(()=>{ closeLanc(); renderAll(); }, 400);
+  }catch(e){
+    console.error(e);
+    document.getElementById('lancBanner').innerHTML = banner('Não foi possível salvar agora. Tente novamente em instantes.', 'err');
+    document.getElementById('lancStatus').textContent = '';
+  }
+  document.getElementById('btnSalvarLanc').disabled = false;
+}
+
+document.getElementById('btnNovoMes').addEventListener('click', openLanc);
+document.getElementById('btnFechar').addEventListener('click', closeLanc);
+document.getElementById('btnCancelar').addEventListener('click', closeLanc);
+document.getElementById('btnSalvarLanc').addEventListener('click', salvarLancamento);
+overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeLanc(); });
+
+let HAS_PDF = !!(window.jspdf && window.jspdf.jsPDF);
+
+function loadScriptOnce(src){
+  return new Promise((resolve, reject)=>{
+    const existing = document.querySelector('script[data-dyn="'+src+'"]');
+    if(existing){ existing.addEventListener('load', ()=>resolve()); existing.addEventListener('error', ()=>reject(new Error('load fail'))); return; }
+    const s = document.createElement('script');
+    s.src = src; s.dataset.dyn = src;
+    s.onload = ()=>resolve();
+    s.onerror = ()=>reject(new Error('load fail '+src));
+    document.head.appendChild(s);
+  });
+}
+
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'c8s7e9s1';
+let isAdmin = false;
+const ADMIN_BUTTON_IDS = ['btnNovoMes','btnExcel','btnSql','btnRecibo','historyPanel'];
+function setAdminButtonsVisible(visible){
+  ADMIN_BUTTON_IDS.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.toggle('admin-only', !visible);
+  });
+}
+setAdminButtonsVisible(false);
+
+async function ensureSwal(){
+  if(window.Swal) return true;
+  try{ await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.14.5/sweetalert2.all.min.js'); }
+  catch(e){ console.error('Falha ao carregar SweetAlert2 (cdnjs)', e); }
+  if(window.Swal) return true;
+  try{ await loadScriptOnce('https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js'); }
+  catch(e){ console.error('Falha ao carregar SweetAlert2 (jsdelivr)', e); }
+  return !!window.Swal;
+}
+
+async function abrirAreaAdmin(){
+  const btn = document.getElementById('btnAdmin');
+  const ok = await ensureSwal();
+  if(!ok){
+    document.getElementById('banners').innerHTML = banner('Não foi possível carregar a tela de login agora. Tente novamente em instantes.', 'err');
+    return;
+  }
+  if(isAdmin){
+    const r = await Swal.fire({
+    icon:'question', title:'Sair da área administrativa?',
+    showCancelButton:true, confirmButtonText:'Sair', cancelButtonText:'Cancelar',
+    customClass:{ popup:'getic-swal-popup', title:'getic-swal-title', htmlContainer:'getic-swal-html',
+      confirmButton:'getic-swal-confirm', cancelButton:'getic-swal-cancel', icon:'getic-swal-icon',
+      actions:'getic-swal-actions', closeButton:'getic-swal-closebtn' },
+    buttonsStyling:false, confirmButtonColor:undefined
+  });
+    if(r.isConfirmed){ isAdmin = false; setAdminButtonsVisible(false); btn.textContent = '🔒 Área admin'; }
+    return;
+  }
+  const { value: ok2 } = await Swal.fire({
+    title: 'Área Administrativa',
+    html:
+      '<input id="swal-user" class="swal2-input getic-swal-input" placeholder="Usuário" autocomplete="off">' +
+      '<input id="swal-pass" type="password" class="swal2-input getic-swal-input" placeholder="Senha" autocomplete="off">',
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'Entrar',
+    cancelButtonText: 'Cancelar',
+    buttonsStyling: false,
+    customClass:{ popup:'getic-swal-popup', title:'getic-swal-title', htmlContainer:'getic-swal-html',
+      confirmButton:'getic-swal-confirm', cancelButton:'getic-swal-cancel',
+      validationMessage:'getic-swal-validation', actions:'getic-swal-actions', closeButton:'getic-swal-closebtn' },
+    preConfirm: () => {
+      const u = document.getElementById('swal-user').value.trim();
+      const p = document.getElementById('swal-pass').value;
+      if(u !== ADMIN_USER || p !== ADMIN_PASS){
+        Swal.showValidationMessage('Usuário ou senha inválidos');
+        return false;
+      }
+      return true;
+    }
+  });
+  if(ok2){
+    isAdmin = true;
+    setAdminButtonsVisible(true);
+    btn.textContent = '🔓 Sair da área admin';
+    Swal.fire({
+      icon:'success', title:'Acesso liberado', timer:1200, showConfirmButton:false,
+      customClass:{ popup:'getic-swal-popup', title:'getic-swal-title', icon:'getic-swal-icon' }
+    });
+  }
+}
+document.getElementById('btnAdmin').addEventListener('click', abrirAreaAdmin);
+
+async function ensureJsPDF(){
+  if(window.jspdf && window.jspdf.jsPDF){ HAS_PDF = true; return true; }
+  try{
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js');
+  }catch(e){ console.error('Falha ao carregar jsPDF (cdnjs)', e); }
+  if(window.jspdf && window.jspdf.jsPDF){ HAS_PDF = true; return true; }
+  try{
+    await loadScriptOnce('https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js');
+  }catch(e){ console.error('Falha ao carregar jsPDF (jsdelivr)', e); }
+  HAS_PDF = !!(window.jspdf && window.jspdf.jsPDF);
+  return HAS_PDF;
+}
+
+async function ensureXLSX(){
+  if(window.XLSX) return true;
+  try{
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+  }catch(e){ console.error('Falha ao carregar XLSX (cdnjs)', e); }
+  if(window.XLSX) return true;
+  try{
+    await loadScriptOnce('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+  }catch(e){ console.error('Falha ao carregar XLSX (jsdelivr)', e); }
+  return !!window.XLSX;
+}
+
+/* ---------------- exportar para Excel, no mesmo layout de abas da planilha original ---------------- */
+function montarAbaExcel(monthKey){
+  const rows = withPct(rowsForMonth(monthKey));
+  const [ano, mes] = monthKey.split('-');
+  const aoa = [];
+  aoa.push([`CONTROLE INTERNO  - GETIC - ${MESES_PT[Number(mes)-1].toUpperCase()} ${ano}`, 'Local/Setor', '', '', 'COD. ORÇ.', 'Sigla', 'Maquina', 'Tipo de Equip.', '', 'Valor de Loc.', '', 'L. Ant', '', 'L. Atual', 'Qtd. Copia', 'Valor Unit', 'Valor Total', 'IP', 'Geral Imp+Loc.', '% Consumo']);
+  let grupoAnterior = null;
+  rows.forEach(d=>{
+    const mostrarGrupo = d.grupo !== grupoAnterior;
+    grupoAnterior = d.grupo;
+    aoa.push(['', mostrarGrupo ? d.grupo : '', d.item, d.setor, d.cod_orc, d.sigla, d.maquina, d.tipo_equip, '',
+      d.valor_loc, '', d.leitura_anterior, '', d.leitura_atual, d.qtd_copia, d.valor_unit, Number(d.valor_copias.toFixed(2)),
+      '', Number(d.geral.toFixed(2)), Number(d.pct.toFixed(2))]);
+  });
+  const totLoc = rows.reduce((s,d)=>s+d.valor_loc,0);
+  const totImpr = rows.reduce((s,d)=>s+d.valor_copias,0);
+  const totGeral = rows.reduce((s,d)=>s+d.geral,0);
+  aoa.push(['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'TOTAL IMPRESSÕES=', Number(totImpr.toFixed(2)), 'TOTAL GERAL=', Number(totGeral.toFixed(2))]);
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{wch:2},{wch:16},{wch:4},{wch:40},{wch:14},{wch:16},{wch:10},{wch:14},{wch:2},{wch:10},{wch:2},{wch:10},{wch:2},{wch:10},{wch:10},{wch:9},{wch:11},{wch:14},{wch:12},{wch:10}];
+  return ws;
+}
+
+async function exportarExcel(){
+  const btn = document.getElementById('btnExcel');
+  const originalLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Gerando Excel…';
+  const ok = await ensureXLSX();
+  if(!ok){
+    document.getElementById('banners').innerHTML = banner('Não foi possível carregar o gerador de Excel agora. Tente novamente em instantes.', 'err');
+    btn.disabled = false; btn.textContent = originalLabel;
+    return;
+  }
+  try{
+    const wb = XLSX.utils.book_new();
+    months.forEach(mk=>{
+      const [ano, mes] = mk.split('-');
+      const ws = montarAbaExcel(mk);
+      XLSX.utils.book_append_sheet(wb, ws, `${mes}-${ano}`);
+    });
+    const arrayBuf = XLSX.write(wb, { type:'array', bookType:'xlsx' });
+    const blob = new Blob([arrayBuf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const filename = `planilha_impressao_GETIC_${months[0]}_a_${months[months.length-1]}.xlsx`;
+    if(downloads){
+      try{ await downloads.save({ filename, data: blob }); btn.disabled=false; btn.textContent=originalLabel; return; }
+      catch(e){ console.error('download recusado', e); }
+    }
+    document.getElementById('banners').innerHTML = banner('Download disponível apenas quando este artifact é aberto na sua conta Claude.', 'warn');
+  }catch(e){
+    console.error('Falha ao montar o Excel', e);
+    document.getElementById('banners').innerHTML = banner('Não foi possível montar a planilha Excel.', 'err');
+  }
+  btn.disabled = false; btn.textContent = originalLabel;
+}
+document.getElementById('btnExcel').addEventListener('click', exportarExcel);
+
+/* ---------------- gerar script SQL (alternativa a banco relacional externo) ---------------- */
+function sqlEscape(v){
+  if(v===null || v===undefined) return 'NULL';
+  if(typeof v === 'number') return String(v);
+  return "'" + String(v).replace(/'/g,"''") + "'";
+}
+async function gerarSql(){
+  const btn = document.getElementById('btnSql');
+  const originalLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Gerando SQL…';
+  try{
+    const lines = [];
+    lines.push('-- Script gerado pelo dashboard GETIC · Controle de Impressão e Locação');
+    lines.push('-- Gerado em ' + new Date().toLocaleString('pt-BR'));
+    lines.push('');
+    lines.push('CREATE TABLE IF NOT EXISTS equipamentos (');
+    lines.push('  item INTEGER PRIMARY KEY,');
+    lines.push('  grupo VARCHAR(60) NOT NULL,');
+    lines.push('  setor VARCHAR(200) NOT NULL,');
+    lines.push('  cod_orc VARCHAR(20) NOT NULL,');
+    lines.push('  sigla VARCHAR(60) NOT NULL,');
+    lines.push('  maquina VARCHAR(30),');
+    lines.push('  tipo_equip VARCHAR(30),');
+    lines.push('  valor_loc DECIMAL(10,2) NOT NULL,');
+    lines.push('  valor_unit DECIMAL(10,4) NOT NULL');
+    lines.push(');');
+    lines.push('');
+    lines.push('CREATE TABLE IF NOT EXISTS leituras (');
+    lines.push('  id INTEGER PRIMARY KEY AUTOINCREMENT,');
+    lines.push('  month_key VARCHAR(7) NOT NULL,');
+    lines.push('  item INTEGER NOT NULL REFERENCES equipamentos(item),');
+    lines.push('  leitura_anterior DECIMAL(14,2) NOT NULL,');
+    lines.push('  leitura_atual DECIMAL(14,2) NOT NULL,');
+    lines.push('  saved_at DATETIME,');
+    lines.push('  UNIQUE(month_key, item)');
+    lines.push(');');
+    lines.push('');
+    lines.push('-- Cadastro de equipamentos');
+    equipList.forEach(e=>{
+      lines.push(`INSERT INTO equipamentos (item, grupo, setor, cod_orc, sigla, maquina, tipo_equip, valor_loc, valor_unit) VALUES (${[
+        sqlEscape(e.item), sqlEscape(e.grupo), sqlEscape(e.setor), sqlEscape(e.cod_orc), sqlEscape(e.sigla),
+        sqlEscape(e.maquina), sqlEscape(e.tipo_equip), sqlEscape(e.valor_loc), sqlEscape(e.valor_unit)
+      ].join(', ')});`);
+    });
+    lines.push('');
+    lines.push('-- Leituras mensais');
+    months.forEach(mk=>{
+      const readings = readingsByMonth[mk] || {};
+      equipList.forEach(e=>{
+        const rd = readings[e.item];
+        if(!rd) return;
+        lines.push(`INSERT INTO leituras (month_key, item, leitura_anterior, leitura_atual, saved_at) VALUES (${[
+          sqlEscape(mk), sqlEscape(e.item), sqlEscape(rd.leitura_anterior), sqlEscape(rd.leitura_atual), sqlEscape(new Date().toISOString())
+        ].join(', ')});`);
+      });
+    });
+    const sqlText = lines.join('\n') + '\n';
+    const filename = `script_banco_getic_${months[0]}_a_${months[months.length-1]}.txt`;
+    if(downloads){
+      try{ await downloads.save({ filename, data: sqlText }); btn.disabled=false; btn.textContent=originalLabel; return; }
+      catch(e){ console.error('download recusado', e); }
+    }
+    document.getElementById('banners').innerHTML = banner('Download disponível apenas quando este artifact é aberto na sua conta Claude.', 'warn');
+  }catch(e){
+    console.error('Falha ao montar o SQL', e);
+    document.getElementById('banners').innerHTML = banner('Não foi possível montar o script SQL.', 'err');
+  }
+  btn.disabled = false; btn.textContent = originalLabel;
+}
+document.getElementById('btnSql').addEventListener('click', gerarSql);
+
+function truncateToWidth(doc, text, maxWidth){
+  text = String(text ?? '');
+  if(doc.getTextWidth(text) <= maxWidth) return text;
+  let t = text;
+  while(t.length>1 && doc.getTextWidth(t+'…') > maxWidth){ t = t.slice(0,-1); }
+  return t+'…';
+}
+
+function gerarRelatorioPdf(){
+  const { jsPDF } = window.jspdf;
+  const rows = withPct(rowsForMonth(currentMonth));
+  const totGeral = rows.reduce((s,d)=>s+d.geral,0);
+  const totImpr = rows.reduce((s,d)=>s+d.valor_copias,0);
+  const totLoc = rows.reduce((s,d)=>s+d.valor_loc,0);
+  const totCop = rows.reduce((s,d)=>s+d.qtd_copia,0);
+
+  const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+  const PAGE_W = doc.internal.pageSize.getWidth();
+  const PAGE_H = doc.internal.pageSize.getHeight();
+  const MARGIN = 12;
+
+  function drawHeader(){
+    doc.setFillColor(21,37,64);
+    doc.rect(0,0,PAGE_W,22,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold'); doc.setFontSize(13);
+    doc.text('SESC · Controle de Impressão e Locação de Equipamentos', MARGIN, 10);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+    doc.text('GETIC — Gerência de Tecnologia da Informação e Comunicação', MARGIN, 16.5);
+    doc.setFontSize(9);
+    doc.text('Mês de referência: '+monthLabel(currentMonth), PAGE_W-MARGIN, 10, {align:'right'});
+    doc.setFontSize(8);
+    doc.text('Gerado em '+new Date().toLocaleString('pt-BR'), PAGE_W-MARGIN, 16.5, {align:'right'});
+  }
+
+  function drawKpis(y){
+    const kpis = [
+      { label:'Custo total do mês', value: fmtR(totGeral) },
+      { label:'Custo com impressão', value: fmtR(totImpr) },
+      { label:'Custo com locação', value: fmtR(totLoc) },
+      { label:'Cópias/impressões', value: fmtN(totCop) },
+    ];
+    const gap = 4, w = (PAGE_W - 2*MARGIN - gap*3)/4, h = 16;
+    kpis.forEach((k,i)=>{
+      const x = MARGIN + i*(w+gap);
+      doc.setDrawColor(225,230,238); doc.setFillColor(255,255,255);
+      doc.roundedRect(x,y,w,h,1.5,1.5,'FD');
+      doc.setFillColor(47,111,237); doc.rect(x,y,1.2,h,'F');
+      doc.setTextColor(92,107,128); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      doc.text(k.label, x+5, y+6);
+      doc.setTextColor(21,37,64); doc.setFont('helvetica','bold'); doc.setFontSize(12.5);
+      doc.text(String(k.value), x+5, y+12.5);
+    });
+    return y+h+6;
+  }
+
+  const cols = [
+    {key:'item', title:'#', w:8, align:'left'},
+    {key:'sigla', title:'Sigla', w:24, align:'left'},
+    {key:'cod_orc', title:'Centro de Custo', w:26, align:'left'},
+    {key:'setor', title:'Setor', w:58, align:'left'},
+    {key:'tipo_equip', title:'Tipo', w:22, align:'left'},
+    {key:'leitura_anterior', title:'Leit. Ant.', w:18, align:'right'},
+    {key:'leitura_atual', title:'Leit. Atual', w:18, align:'right'},
+    {key:'qtd_copia', title:'Cópias', w:16, align:'right'},
+    {key:'valor_loc', title:'Locação (R$)', w:20, align:'right'},
+    {key:'valor_copias', title:'Impressão (R$)', w:22, align:'right'},
+    {key:'geral', title:'Total (R$)', w:20, align:'right'},
+    {key:'pct', title:'%', w:12, align:'right'},
+  ];
+  const totalW = cols.reduce((s,c)=>s+c.w,0);
+  const rowH = 6.2;
+
+  function drawTableHeader(y){
+    doc.setFillColor(21,37,64);
+    doc.rect(MARGIN,y,totalW,7,'F');
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    let x = MARGIN;
+    cols.forEach(c=>{
+      const tx = c.align==='right' ? x+c.w-1.5 : x+1.5;
+      doc.text(c.title, tx, y+4.8, {align: c.align});
+      x += c.w;
+    });
+    return y+7;
+  }
+
+  function drawRow(y, d, idx){
+    if(idx%2===1){ doc.setFillColor(244,246,249); doc.rect(MARGIN,y,totalW,rowH,'F'); }
+    doc.setTextColor(27,36,52); doc.setFont('helvetica','normal'); doc.setFontSize(7.3);
+    let x = MARGIN;
+    cols.forEach(c=>{
+      let text;
+      if(c.key==='qtd_copia' || c.key==='leitura_anterior' || c.key==='leitura_atual') text = fmtN(d[c.key]);
+      else if(c.key==='valor_loc' || c.key==='valor_copias' || c.key==='geral') text = fmtR(d[c.key]).replace('R$ ','');
+      else if(c.key==='pct') text = d.pct.toFixed(1)+'%';
+      else text = String(d[c.key] ?? '');
+      if(c.key==='setor') text = truncateToWidth(doc, text, c.w-3);
+      const tx = c.align==='right' ? x+c.w-1.5 : x+1.5;
+      doc.text(text, tx, y+4.3, {align: c.align});
+      x += c.w;
+    });
+  }
+
+  function drawTotalsRow(y){
+    doc.setFillColor(21,37,64);
+    doc.rect(MARGIN,y,totalW,7,'F');
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.6);
+    doc.text('TOTAL GERAL', MARGIN+1.5, y+4.8);
+    let x = MARGIN;
+    cols.forEach(c=>{
+      if(c.key==='valor_loc'){ doc.text(fmtR(totLoc).replace('R$ ',''), x+c.w-1.5, y+4.8, {align:'right'}); }
+      if(c.key==='valor_copias'){ doc.text(fmtR(totImpr).replace('R$ ',''), x+c.w-1.5, y+4.8, {align:'right'}); }
+      if(c.key==='geral'){ doc.text(fmtR(totGeral).replace('R$ ',''), x+c.w-1.5, y+4.8, {align:'right'}); }
+      if(c.key==='qtd_copia'){ doc.text(fmtN(totCop), x+c.w-1.5, y+4.8, {align:'right'}); }
+      x += c.w;
+    });
+    return y+7;
+  }
+
+  drawHeader();
+  let y = drawKpis(28);
+  y = drawTableHeader(y);
+  rows.forEach((d,idx)=>{
+    if(y+rowH > PAGE_H-16){
+      doc.addPage();
+      doc.setFillColor(21,37,64); doc.rect(0,0,PAGE_W,10,'F');
+      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+      doc.text('Continuação — '+monthLabel(currentMonth), MARGIN, 6.5);
+      y = drawTableHeader(14);
+    }
+    drawRow(y, d, idx);
+    y += rowH;
+  });
+  y = drawTotalsRow(y);
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let p=1;p<=pageCount;p++){
+    doc.setPage(p);
+    doc.setTextColor(140,150,165); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+    doc.text('Página '+p+' de '+pageCount, PAGE_W-MARGIN, PAGE_H-6, {align:'right'});
+    doc.text('Centro de custo = COD. ORÇ. da planilha de origem.', MARGIN, PAGE_H-6);
+  }
+
+  return doc;
+}
+
+async function baixarRecibo(){
+  const btn = document.getElementById('btnRecibo');
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Gerando PDF…';
+  const ok = await ensureJsPDF();
+  if(!ok){
+    document.getElementById('banners').innerHTML = banner('Não foi possível carregar o gerador de PDF agora. Verifique a conexão e tente novamente.', 'err');
+    btn.disabled = false; btn.textContent = originalLabel;
+    return;
+  }
+  let blob;
+  try{
+    blob = gerarRelatorioPdf().output('blob');
+  }catch(e){
+    console.error('Falha ao montar o PDF', e);
+    document.getElementById('banners').innerHTML = banner('Não foi possível montar o relatório em PDF.', 'err');
+    btn.disabled = false; btn.textContent = originalLabel;
+    return;
+  }
+  const filename = `relatorio_getic_${currentMonth}.pdf`;
+  if(downloads){
+    try{ await downloads.save({ filename, data: blob }); btn.disabled = false; btn.textContent = originalLabel; return; }
+    catch(e){ console.error('download recusado', e); }
+  }
+  document.getElementById('banners').innerHTML = banner('Download disponível apenas quando este artifact é aberto na sua conta Claude.', 'warn');
+  btn.disabled = false; btn.textContent = originalLabel;
+}
+document.getElementById('btnRecibo').addEventListener('click', baixarRecibo);
+
+initCapabilities();
+</script>
+</body>
+</html>
