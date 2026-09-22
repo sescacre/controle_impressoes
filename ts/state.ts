@@ -4,6 +4,9 @@ import type { Equipamento, LeiturasPorMes, LocalDb, LocalDownloads } from './typ
 
 export const SEED_MONTHS = Object.keys(ALL_MONTHS_SEED).sort();
 export const SEED_MONTH = SEED_MONTHS[SEED_MONTHS.length - 1];
+const currentYear = new Date().getFullYear();
+const seedYear = Number(SEED_MONTH.split('-')[0]);
+const initialMonth = currentYear > seedYear ? `${currentYear}-01` : SEED_MONTH;
 
 interface AppState {
   db: LocalDb | null;
@@ -24,7 +27,7 @@ export const state: AppState = {
   canWrite: true,
   equipList: EQUIP_SEED.slice(),
   months: SEED_MONTHS.slice(),
-  currentMonth: SEED_MONTH,
+  currentMonth: initialMonth,
   readingsByMonth: JSON.parse(JSON.stringify(ALL_MONTHS_SEED)),
   currentGrupo: 'Todos',
 };

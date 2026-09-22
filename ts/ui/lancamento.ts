@@ -12,8 +12,10 @@ const overlay = (): HTMLElement => $('overlay');
 function openLanc(): void {
   const { db, canWrite } = state;
   if (!db || !canWrite) return;
-  lancMonthKey = nextMonthKey(state.months[state.months.length - 1] || SEED_MONTH);
   const prevMonth = state.months[state.months.length - 1] || SEED_MONTH;
+  const currentYear = new Date().getFullYear();
+  const lastYear = Number(prevMonth.split('-')[0]);
+  lancMonthKey = currentYear > lastYear ? `${currentYear}-01` : nextMonthKey(prevMonth);
   const prevReadings = state.readingsByMonth[prevMonth] || seedReadings();
   lancRows = state.equipList.map(e => ({
     item: e.item, sigla: e.sigla, cod_orc: e.cod_orc, valor_unit: e.valor_unit,

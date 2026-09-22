@@ -4,7 +4,10 @@ import { $ } from '../utils/dom';
 
 export function renderYearSelect(): void {
   const yearSel = $<HTMLSelectElement>('yearSelect');
-  const years = Array.from(new Set(state.months.map(mk => mk.split('-')[0])));
+  const years = Array.from(new Set([
+    ...state.months.map(mk => mk.split('-')[0]),
+    String(new Date().getFullYear()),
+  ]));
   const curYear = state.currentMonth.split('-')[0];
   if (!years.includes(curYear)) years.push(curYear);
   years.sort();
