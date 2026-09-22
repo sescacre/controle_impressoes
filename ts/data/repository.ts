@@ -26,12 +26,29 @@ export async function loadFromDb(db: LocalDb): Promise<void> {
       state.equipList.sort((a, b) => a.item - b.item);
       // autocorreção: garante que a regra de preço por máquina (locação e valor por folha) esteja sempre em vigor,
       // mesmo em cadastros salvos antes do ajuste.
-      const corrigir = state.equipList.filter(e => e.valor_unit !== valorUnitFor(e.maquina) || e.valor_loc !== valorLocFor(e.maquina));
+      const corrigir = state.equipList.filter(e =>
+        e.valor_unit !== valorUnitFor(e.maquina)
+        || e.valor_loc !== valorLocFor(e.maquina)
+        || (e.sigla === 'GEDPI' && e.setor === 'Gestão de Comunicação Institucional - DPI - Bosque'),
+      );
       if (corrigir.length) {
-        state.equipList = state.equipList.map(e => ({ ...e, valor_unit: valorUnitFor(e.maquina), valor_loc: valorLocFor(e.maquina) }));
+        state.equipList = state.equipList.map(e => ({
+          ...e,
+          setor: e.sigla === 'GEDPI' && e.setor === 'Gestão de Comunicação Institucional - DPI - Bosque'
+            ? 'Gerencia de Comunicação Institucional - DPI - Bosque'
+            : e.setor,
+          valor_unit: valorUnitFor(e.maquina),
+          valor_loc: valorLocFor(e.maquina),
+        }));
         try {
-          await Promise.all(corrigir.map(e => db.collection('equipamentos').doc(String(e.item)).update({ valor_unit: valorUnitFor(e.maquina), valor_loc: valorLocFor(e.maquina) })));
-        } catch (e) { console.error('Falha ao corrigir valores salvos', e); }
+          await Promise.all(corrigir.map(e => db.collection('equipamentos').doc(String(e.item)).update({
+            setor: e.sigla === 'GEDPI' && e.setor === 'Gestão de Comunicação Institucional - DPI - Bosque'
+              ? 'Gerencia de Comunicação Institucional - DPI - Bosque'
+              : e.setor,
+            valor_unit: valorUnitFor(e.maquina),
+            valor_loc: valorLocFor(e.maquina),
+          })));
+        } catch (e) { console.error('Falha ao corrigir dados salvos', e); }
       }
     }
 
@@ -59,7 +76,9 @@ export async function loadFromDb(db: LocalDb): Promise<void> {
       });
       state.readingsByMonth[mk] = r;
     }
-    state.currentMonth = state.months[state.months.length - 1] || SEED_MONTH;
+    const lastMonth = state.months[state.months.length - 1] || SEED_MONTH;
+    const currentYear = new Date().getFullYear();
+    state.currentMonth = currentYear > Number(lastMonth.split('-')[0]) ? `${currentYear}-01` : lastMonth;
   } catch (e) {
     console.error('Falha ao ler banco do artifact', e);
     $('banners').innerHTML = banner('Não foi possível carregar os dados salvos agora. Mostrando o mês semente.', 'warn');

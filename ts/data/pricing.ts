@@ -14,4 +14,11 @@ export function valorLocFor(maquina: string): number {
   return MAQUINAS_LOC_184.has(maquina) ? 184 : 80;
 }
 
-export const EQUIP_SEED: Equipamento[] = EQUIP_SEED_RAW.map(e => ({ ...e, valor_unit: valorUnitFor(e.maquina), valor_loc: valorLocFor(e.maquina) }));
+export const EQUIP_SEED: Equipamento[] = EQUIP_SEED_RAW.map(e => ({
+  ...e,
+  setor: e.setor === 'Gestão de Comunicação Institucional - DPI - Bosque'
+    ? 'Gerencia de Comunicação Institucional - DPI - Bosque'
+    : e.setor,
+  valor_unit: valorUnitFor(e.maquina),
+  valor_loc: valorLocFor(e.maquina),
+}));

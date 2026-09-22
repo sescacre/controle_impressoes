@@ -2,7 +2,7 @@
 
 O **PrintGest** (Sistema de Gestão Centralizada de Impressões) é um dashboard para acompanhar custos de impressão e locação de equipamentos no âmbito do contrato **AC-2022-CS-003**. Ele centraliza leituras mensais de contadores por equipamento, calcula custos por página e por período, e exibe KPIs, gráficos e históricos que facilitam o controle orçamentário e a conferência de faturas da locadora.
 
-A aplicação roda inteiramente no navegador, **sem backend**: os dados ficam salvos localmente via `localStorage` (numa camada que imita a API de coleções de um banco de documentos), e relatórios podem ser exportados em Excel, PDF ou SQL diretamente da interface.
+A aplicação utiliza atualmente o armazenamento local do navegador via `localStorage` (numa camada que imita a API de coleções de um banco de documentos), e relatórios podem ser exportados em Excel, PDF ou SQL diretamente da interface. A arquitetura pode ser integrada a um backend e a um banco de dados futuramente, conforme a necessidade do projeto.
 
 ## Funcionalidades
 
@@ -81,7 +81,7 @@ O `Dockerfile` usa build multi-stage: a primeira etapa roda `npm ci` + `npm run 
 
 ## Persistência de dados
 
-Não há banco de dados externo nem API própria: todo o estado (equipamentos, meses lançados e leituras) é gravado no `localStorage` do navegador através de uma camada (`ts/data/localDb.ts`) que expõe uma API de coleções (`collection().doc().get()/set()/update()`), inspirada em bancos de documentos. Na primeira execução, o app semeia automaticamente os equipamentos e o histórico real de meses (`ts/data/seed.ts`).
+Atualmente, todo o estado (equipamentos, meses lançados e leituras) é gravado no `localStorage` do navegador através de uma camada (`ts/data/localDb.ts`) que expõe uma API de coleções (`collection().doc().get()/set()/update()`), inspirada em bancos de documentos. Na primeira execução, o app semeia automaticamente os equipamentos e o histórico real de meses (`ts/data/seed.ts`). Essa camada pode ser substituída ou conectada a um backend e a um banco de dados quando essa evolução for necessária.
 
 > Como os dados vivem no navegador do usuário, limpar o cache/localStorage do navegador apaga o histórico local. Use as exportações (Excel/PDF/SQL) para manter backups fora do navegador.
 
