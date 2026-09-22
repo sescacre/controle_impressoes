@@ -74,10 +74,10 @@ O `dev` sobe um servidor local (esbuild `--servedir`) em **http://localhost:8080
 
 ```bash
 docker build -t printgest .
-docker run --rm -p 8080:8080 printgest
+docker run --rm -p 8090:8090 printgest
 ```
 
-O `Dockerfile` usa build multi-stage: a primeira etapa roda `npm ci` + `npm run build` (checagem de tipos e bundle); a segunda copia `dist/`, `html/`, `css/` e `assets/` para uma imagem `nginx-unprivileged`, que serve tudo na porta 8080 (ver `nginx.conf`).
+O `Dockerfile` usa build multi-stage: a primeira etapa roda `npm ci` + `npm run build` (checagem de tipos e bundle); a segunda copia `dist/`, `html/`, `css/` e `assets/` para uma imagem `nginx-unprivileged`, que serve tudo na porta 8090 (ver `nginx.conf`). A porta foi escolhida para não colidir com serviços comuns do host (ex.: 3000 do Dokploy, 8080 já usado por outro serviço); ajuste `nginx.conf` (Docker) ou a variável `PORT` (`npm start`, Nixpacks) se precisar de outra.
 
 ## Persistência de dados
 
