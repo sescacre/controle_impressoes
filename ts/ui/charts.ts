@@ -1,5 +1,5 @@
 import type { Chart } from 'chart.js';
-import { CATEGORIAS, categoriaOf, type CategoriaEquip } from '../data/categorias';
+import { CATEGORIAS, categoriaOf, rotuloCategoria, type CategoriaEquip } from '../data/categorias';
 import { filtered, rowsForMonth, withPct } from '../data/rows';
 import { state } from '../state';
 import { $ } from '../utils/dom';
@@ -55,7 +55,7 @@ function renderChartSetor(): void {
       indexAxis: 'y',
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: c => fmtR(c.raw as number), afterLabel: c => `Impressora: ${rows[c.dataIndex].maquina}` } },
+        tooltip: { callbacks: { label: c => fmtR(c.raw as number), afterLabel: c => `Impressora: ${rotuloCategoria(rows[c.dataIndex])}` } },
       },
       scales: { x: { grid: { color: cssVar('--grid') }, ticks: { callback: v => 'R$' + v } }, y: { grid: { display: false } } },
     },
