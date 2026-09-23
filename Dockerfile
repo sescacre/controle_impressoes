@@ -32,5 +32,10 @@ COPY html /usr/share/nginx/html/html
 COPY css /usr/share/nginx/html/css
 COPY assets /usr/share/nginx/html/assets
 
+<<<<<<< HEAD
 # nginx-unprivileged já roda como usuário não-root e escuta na 3009
 EXPOSE 3009
+=======
+# nginx-unprivileged já roda como usuário não-root e escuta na 3500
+EXPOSE 3500
+>>>>>>> 179b9a82b307e8cd7638b6dad144fadb99284e3e

@@ -6,7 +6,11 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+<<<<<<< HEAD
 const PORT = process.env.PORT || 3009;
+=======
+const PORT = process.env.PORT || 3500;
+>>>>>>> 179b9a82b307e8cd7638b6dad144fadb99284e3e
 const ROOT = __dirname;
 
 const MIME_TYPES = {
