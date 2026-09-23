@@ -53,7 +53,10 @@ function renderChartSetor(): void {
     data: { labels: rows.map(d => d.sigla), datasets: [{ data: rows.map(d => d.geral), backgroundColor: cssVar('--accent'), borderRadius: 4, maxBarThickness: 22 }] },
     options: {
       indexAxis: 'y',
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fmtR(c.raw as number) } } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => fmtR(c.raw as number), afterLabel: c => `Impressora: ${rows[c.dataIndex].maquina}` } },
+      },
       scales: { x: { grid: { color: cssVar('--grid') }, ticks: { callback: v => 'R$' + v } }, y: { grid: { display: false } } },
     },
   });
