@@ -59,7 +59,7 @@ npm install
 npm run dev
 ```
 
-O `dev` sobe um servidor local (esbuild `--servedir`) em **http://localhost:8080**, com bundle e sourcemap gerados a partir de `ts/main.ts`. Abra `html/index.html` pelo servidor (ex.: `http://localhost:8080/html/index.html`).
+O `dev` sobe um servidor local (esbuild `--servedir`) em **http://localhost:3009** — mesma porta usada em produção (ver [Build e execução via Docker](#build-e-execução-via-docker)) —, com bundle e sourcemap gerados a partir de `ts/main.ts`. Abra `html/index.html` pelo servidor (ex.: `http://localhost:3009/html/index.html`).
 
 ### Scripts disponíveis
 
