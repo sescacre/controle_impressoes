@@ -32,7 +32,7 @@ const server = http.createServer((req, res) => {
   const filePath = path.join(ROOT, urlPath);
   if (!filePath.startsWith(ROOT)) {
     res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('Requisição inválida');
+    res.end('Requisição inválida'); 
     return;
   }
 
