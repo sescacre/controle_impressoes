@@ -37,7 +37,37 @@ function truncateToWidth(doc: jsPDF, text: unknown, maxWidth: number): string {
   return t + '…';
 }
 
-function gerarRelatorioPdf(jsPDFCtor: NonNullable<Window['jspdf']>['jsPDF']): jsPDF {
+interface Logo {
+  dataUrl: string;
+  ratio: number;
+}
+
+/** Converte o logo do cabeçalho da página (PNG branco, fundo transparente) em data URL para o jsPDF. */
+function carregarLogo(): Promise<Logo | null> {
+  const src = document.querySelector<HTMLImageElement>('header .logo')?.src;
+  if (!src) return Promise.resolve(null);
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(null); return; }
+        ctx.drawImage(img, 0, 0);
+        resolve({ dataUrl: canvas.toDataURL('image/png'), ratio: img.naturalWidth / img.naturalHeight });
+      } catch (e) {
+        console.error('Falha ao preparar o logo para o PDF', e);
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+function gerarRelatorioPdf(jsPDFCtor: NonNullable<Window['jspdf']>['jsPDF'], logo: Logo | null): jsPDF {
   const rows = withPct(rowsForMonth(state.currentMonth));
   const totGeral = rows.reduce((s, d) => s + d.geral, 0);
   const totImpr = rows.reduce((s, d) => s + d.valor_copias, 0);
@@ -48,19 +78,27 @@ function gerarRelatorioPdf(jsPDFCtor: NonNullable<Window['jspdf']>['jsPDF']): js
   const PAGE_W = doc.internal.pageSize.getWidth();
   const PAGE_H = doc.internal.pageSize.getHeight();
   const MARGIN = 12;
+  const HEADER_H = 26;
 
   function drawHeader(): void {
     doc.setFillColor(21, 37, 64);
-    doc.rect(0, 0, PAGE_W, 22, 'F');
+    doc.rect(0, 0, PAGE_W, HEADER_H, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
-    doc.text('SGCI · Controle de Impressão e Locação de Equipamentos', MARGIN, 10);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-    doc.text('GETIC — Gerência de Tecnologia da Informação e Comunicação', MARGIN, 16.5);
+    if (logo) {
+      const h = 11;
+      doc.addImage(logo.dataUrl, 'PNG', MARGIN, 3, h * logo.ratio, h);
+    } else {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+      doc.text('PrintGest', MARGIN, 11);
+    }
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.text('Controle de Impressão & Locação de Equipamentos', MARGIN, 18.5);
+    doc.setFontSize(7.5);
+    doc.text('GETIC — Gerência de Tecnologia da Informação e Comunicação', MARGIN, 22.5);
     doc.setFontSize(9);
-    doc.text('Mês de referência: ' + monthLabel(state.currentMonth), PAGE_W - MARGIN, 10, { align: 'right' });
+    doc.text('Mês de referência: ' + monthLabel(state.currentMonth), PAGE_W - MARGIN, 11, { align: 'right' });
     doc.setFontSize(8);
-    doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), PAGE_W - MARGIN, 16.5, { align: 'right' });
+    doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), PAGE_W - MARGIN, 18.5, { align: 'right' });
   }
 
   function drawKpis(y: number): number {
@@ -134,7 +172,7 @@ function gerarRelatorioPdf(jsPDFCtor: NonNullable<Window['jspdf']>['jsPDF']): js
   }
 
   drawHeader();
-  let y = drawKpis(28);
+  let y = drawKpis(HEADER_H + 6);
   y = drawTableHeader(y);
   rows.forEach((d, idx) => {
     if (y + rowH > PAGE_H - 16) {
@@ -173,7 +211,7 @@ async function baixarRecibo(): Promise<void> {
       return null;
     }
     try {
-      const blob = gerarRelatorioPdf(lib.jsPDF).output('blob');
+      const blob = gerarRelatorioPdf(lib.jsPDF, await carregarLogo()).output('blob');
       return { filename: `relatorio_getic_${state.currentMonth}.pdf`, data: blob };
     } catch (e) {
       console.error('Falha ao montar o PDF', e);
