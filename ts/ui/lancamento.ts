@@ -1,4 +1,4 @@
-import { seedReadings } from '../data/rows';
+import { qtdCobrada, seedReadings } from '../data/rows';
 import { SEED_MONTH, state } from '../state';
 import type { LinhaLancamento } from '../types';
 import { $ } from '../utils/dom';
@@ -36,7 +36,7 @@ function closeLanc(): void {
 /** Cópias e valor de uma linha; sem leitura atual informada, considera consumo zero. */
 function calcLinha(r: LinhaLancamento): { qtd: number; val: number } {
   const atual = r.leitura_atual == null ? r.leitura_anterior : r.leitura_atual;
-  const qtd = Math.max(0, atual - r.leitura_anterior);
+  const qtd = qtdCobrada(r.leitura_anterior, atual);
   return { qtd, val: qtd * r.valor_unit };
 }
 

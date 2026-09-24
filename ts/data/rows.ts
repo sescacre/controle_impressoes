@@ -9,11 +9,20 @@ export function seedReadings(): LeiturasMes {
   return r;
 }
 
+/**
+ * Quantidade cobrada entre duas leituras: a diferença exata, com 2 casas decimais
+ * (a plotter A1 mede em metros, ex.: 4.374,86 − 4.305,16 = 69,70 m). O arredondamento
+ * em 2 casas só remove o ruído de ponto flutuante (69,69999999 → 69,70).
+ */
+export function qtdCobrada(anterior: number, atual: number): number {
+  return Math.max(0, Math.round((atual - anterior) * 100) / 100);
+}
+
 export function rowsForMonth(monthKey: string): LinhaMes[] {
   const readings = state.readingsByMonth[monthKey] || {};
   return state.equipList.map(e => {
     const rd = readings[e.item] || { leitura_anterior: e.l_ant, leitura_atual: e.l_ant };
-    const qtd = Math.max(0, rd.leitura_atual - rd.leitura_anterior);
+    const qtd = qtdCobrada(rd.leitura_anterior, rd.leitura_atual);
     const valor_copias = qtd * e.valor_unit;
     const geral = valor_copias + e.valor_loc;
     return {

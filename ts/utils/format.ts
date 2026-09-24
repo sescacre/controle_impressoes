@@ -2,7 +2,15 @@ import { MESES_PT } from '../config';
 import type { BannerKind } from '../types';
 
 export const fmtR = (n: number | null | undefined): string => 'R$ ' + (n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-export const fmtN = (n: number | null | undefined): string => (n || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+/**
+ * Inteiros sem casas decimais (contadores de cópias); números fracionados sempre com 2 casas —
+ * leituras e metragem da plotter A1 (ex.: 4.305,16 e 69,70), sem arredondar para inteiro.
+ */
+export const fmtN = (n: number | null | undefined): string => {
+  const v = n || 0;
+  const casas = Number.isInteger(Math.round(v * 100) / 100) ? 0 : 2;
+  return v.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+};
 
 export function monthLabel(key: string): string {
   const [y, m] = key.split('-').map(Number);
