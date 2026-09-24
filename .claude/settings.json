@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=\"PrintGest_Documentacao.pdf\" --print-to-pdf-no-header \"file:///$\\(pwd\\)/doc.html\")",
+      "Read(//c/Program Files/**)",
+      "Bash(node -e \"console.log\\(require.resolve\\('pdfjs-dist'\\)\\)\")",
+      "Bash(pdfinfo PrintGest_Documentacao.pdf)",
+      "Bash(pdftotext -layout PrintGest_Documentacao.pdf -)",
+      "Read(//mingw64/bin/**)",
+      "Read(//mingw64/**)",
+      "Bash(/mingw64/bin/pdftotext -v)",
+      "Bash(/mingw64/bin/pdftotext.exe -layout PrintGest_Documentacao.pdf out.txt)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(rm -f \"C:/Users/rmatos/AppData/Local/Temp/claude/c--Projetos-SESC-controle-impressoes/d1d15066-f415-4c05-b629-8bab8f4a1e34/scratchpad/out.txt\" \"C:/Users/rmatos/AppData/Local/Temp/claude/c--Projetos-SESC-controle-impressoes/d1d15066-f415-4c05-b629-8bab8f4a1e34/scratchpad/out_utf8.txt\")",
+      "Bash(mkdir -p \"C:/Projetos SESC/controle_impressoes/docs\")",
+      "Bash(cp \"C:/Users/rmatos/AppData/Local/Temp/claude/c--Projetos-SESC-controle-impressoes/d1d15066-f415-4c05-b629-8bab8f4a1e34/scratchpad/PrintGest_Documentacao.pdf\" \"C:/Projetos SESC/controle_impressoes/docs/PrintGest_Documentacao.pdf\")"
+    ]
+  }
+}

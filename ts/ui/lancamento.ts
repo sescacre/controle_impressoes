@@ -45,12 +45,35 @@ function renderLancTable(): void {
     <div class="lanc-cols lanc-row">
       <div class="lanc-cell name">${r.sigla}</div>
       <div class="lanc-cell name">${r.cod_orc}</div>
-      <div class="lanc-cell num">${fmtN(r.leitura_anterior)}</div>
+      <div class="lanc-cell num"><input type="number" step="0.01" min="0" data-i="${i}" class="input-anterior" readonly title="Clique para editar a leitura anterior (ex.: troca de impressora)" value="${r.leitura_anterior}"></div>
       <div class="lanc-cell num"><input type="number" step="0.01" min="0" data-i="${i}" class="input-atual" placeholder="${fmtN(r.leitura_anterior)}"></div>
       <div class="lanc-cell num" id="lanc-qtd-${i}">0</div>
       <div class="lanc-cell num" id="lanc-val-${i}">R$ 0,00</div>
     </div>
   `).join('');
+  document.querySelectorAll<HTMLInputElement>('.input-anterior').forEach(inp => {
+    const i = Number(inp.dataset.i);
+    const original = lancRows[i].leitura_anterior;
+    // Só fica editável depois de um clique explícito no campo.
+    inp.addEventListener('click', () => {
+      if (!inp.readOnly) return;
+      inp.readOnly = false;
+      inp.select();
+    });
+    inp.addEventListener('input', () => {
+      if (inp.value === '') return;
+      lancRows[i].leitura_anterior = parseFloat(inp.value);
+      inp.classList.toggle('alterada', lancRows[i].leitura_anterior !== original);
+      const atual = document.querySelector<HTMLInputElement>(`.input-atual[data-i="${i}"]`);
+      if (atual) atual.placeholder = fmtN(lancRows[i].leitura_anterior);
+      updateLancRow(i);
+      updateLancTotals();
+    });
+    inp.addEventListener('blur', () => {
+      if (inp.value === '') inp.value = String(lancRows[i].leitura_anterior);
+      inp.readOnly = true;
+    });
+  });
   document.querySelectorAll<HTMLInputElement>('.input-atual').forEach(inp => {
     inp.addEventListener('input', () => {
       const i = Number(inp.dataset.i);
@@ -60,6 +83,16 @@ function renderLancTable(): void {
     });
   });
   updateLancTotals();
+}
+
+function limparLeiturasAtuais(): void {
+  lancRows.forEach(r => { r.leitura_atual = null; });
+  document.querySelectorAll<HTMLInputElement>('.input-atual').forEach(inp => {
+    inp.value = '';
+    updateLancRow(Number(inp.dataset.i));
+  });
+  updateLancTotals();
+  $('lancBanner').innerHTML = '';
 }
 
 function updateLancRow(i: number): void {
@@ -121,6 +154,7 @@ export function bindLancamento(onSaved: () => void): void {
   $('btnNovoMes').addEventListener('click', openLanc);
   $('btnFechar').addEventListener('click', closeLanc);
   $('btnCancelar').addEventListener('click', closeLanc);
+  $('btnLimparLanc').addEventListener('click', limparLeiturasAtuais);
   $('btnSalvarLanc').addEventListener('click', () => salvarLancamento(onSaved));
   overlay().addEventListener('click', (e) => { if (e.target === overlay()) closeLanc(); });
 }
