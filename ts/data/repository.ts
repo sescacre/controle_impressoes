@@ -29,7 +29,8 @@ export async function loadFromDb(db: LocalDb): Promise<void> {
       const corrigir = state.equipList.filter(e =>
         e.valor_unit !== valorUnitFor(e.maquina)
         || e.valor_loc !== valorLocFor(e.maquina)
-        || (e.sigla === 'GEDPI' && e.setor === 'Gestão de Comunicação Institucional - DPI - Bosque'),
+        || (e.sigla === 'GEDPI' && e.setor === 'Gestão de Comunicação Institucional - DPI - Bosque')
+        || (e.sigla === 'GEA' && e.cod_orc !== '001400150102'),
       );
       if (corrigir.length) {
         state.equipList = state.equipList.map(e => ({
@@ -37,6 +38,7 @@ export async function loadFromDb(db: LocalDb): Promise<void> {
           setor: e.sigla === 'GEDPI' && e.setor === 'Gestão de Comunicação Institucional - DPI - Bosque'
             ? 'Gerencia de Comunicação Institucional - DPI - Bosque'
             : e.setor,
+          cod_orc: e.sigla === 'GEA' ? '001400150102' : e.cod_orc,
           valor_unit: valorUnitFor(e.maquina),
           valor_loc: valorLocFor(e.maquina),
         }));
@@ -45,6 +47,7 @@ export async function loadFromDb(db: LocalDb): Promise<void> {
             setor: e.sigla === 'GEDPI' && e.setor === 'Gestão de Comunicação Institucional - DPI - Bosque'
               ? 'Gerencia de Comunicação Institucional - DPI - Bosque'
               : e.setor,
+            cod_orc: e.sigla === 'GEA' ? '001400150102' : e.cod_orc,
             valor_unit: valorUnitFor(e.maquina),
             valor_loc: valorLocFor(e.maquina),
           })));
