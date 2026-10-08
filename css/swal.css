@@ -5,26 +5,45 @@
   border-radius:14px !important;border:1px solid var(--panel-border) !important;
   font-family:var(--font-body) !important;box-shadow:0 20px 60px rgba(0,0,0,.4) !important;
 }
-.getic-swal-title{color:var(--text) !important;font-family:var(--font-head) !important;font-weight:600 !important;font-size:19px !important;}
-.getic-swal-html{color:var(--text-dim) !important;font-family:var(--font-body) !important;}
+.getic-swal-title{color:var(--text) !important;font-family:var(--font-head) !important;font-weight:700 !important;font-size:21px !important;}
+.getic-swal-html{color:var(--text-muted) !important;font-family:var(--font-body) !important;}
 .getic-swal-icon{border-color:var(--accent) !important;color:var(--accent) !important;}
 .getic-swal-confirm{
+  display:inline-flex !important;align-items:center;gap:8px;
   background:var(--accent) !important;color:#fff !important;border-radius:8px !important;font-family:var(--font-body) !important;
-  font-weight:600 !important;box-shadow:none !important;padding:9px 20px !important;
+  font-weight:700 !important;font-size:15px !important;box-shadow:none !important;padding:10px 22px !important;
 }
+.getic-swal-confirm:hover{background:var(--navy-soft) !important;}
 .getic-swal-confirm:focus{box-shadow:0 0 0 2px var(--accent-soft) !important;}
 .getic-swal-cancel{
-  background:transparent !important;color:var(--text-dim) !important;border:1px solid var(--panel-border) !important;
-  border-radius:8px !important;box-shadow:none !important;font-family:var(--font-body) !important;padding:9px 20px !important;
+  display:inline-flex !important;align-items:center;gap:8px;
+  background:transparent !important;color:var(--text-muted) !important;border:1px solid var(--panel-border) !important;
+  border-radius:8px !important;box-shadow:none !important;font-family:var(--font-body) !important;font-weight:600 !important;font-size:15px !important;padding:10px 22px !important;
 }
+.getic-swal-cancel:hover{background:var(--bg) !important;color:var(--text) !important;}
+.getic-btn-icon{font-size:14px;line-height:1;}
+/* display/width explícitos e !important: o CSS do SweetAlert2 só estica
+   inputs de verdade (seletor "input:where(.swal2-input)"), então as divs que
+   envolvem os campos (ícone + input, abaixo) ficavam com largura "encolhida
+   ao conteúdo" e sem a margem padrão, desalinhadas entre si. */
 .getic-swal-input{
-  background:var(--bg) !important;color:var(--text) !important;border:1px solid var(--panel-border) !important;
-  border-radius:8px !important;font-family:var(--font-mono) !important;font-size:14px !important;
-  box-shadow:none !important;
+  display:flex !important;align-items:center;width:100% !important;max-width:100% !important;box-sizing:border-box !important;
+  height:46px !important;margin:12px 0 0 !important;padding:0 !important;
+  background:var(--bg) !important;border:1px solid var(--panel-border) !important;
+  border-radius:8px !important;box-shadow:none !important;transition:border-color .15s,box-shadow .15s;
 }
-.getic-swal-input:focus{border-color:var(--accent) !important;box-shadow:0 0 0 2px var(--accent-soft) !important;}
+.getic-swal-input:focus-within{border-color:var(--accent) !important;box-shadow:0 0 0 3px var(--accent-soft) !important;}
+.getic-field-icon{flex:none;width:40px;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text-muted);}
+.getic-swal-input input{
+  flex:1;width:100%;min-width:0;height:100%;border:none !important;background:transparent !important;box-shadow:none !important;outline:none !important;
+  color:var(--text) !important;font-family:var(--font-mono) !important;font-size:15px !important;font-weight:500;
+  padding:0 14px 0 0 !important;margin:0 !important;
+}
+.getic-swal-input input::placeholder{color:var(--text-dim) !important;font-weight:400;}
+.getic-pass-toggle{flex:none;height:100%;display:flex !important;align-items:center;background:none !important;border:none !important;box-shadow:none !important;cursor:pointer;font-size:18px;line-height:1;padding:0 14px !important;color:var(--text-muted);}
+.getic-pass-toggle:hover{color:var(--text);}
 .getic-swal-validation{
-  background:var(--amber-soft) !important;color:var(--amber-text) !important;border-radius:8px !important;font-family:var(--font-body) !important;
+  background:var(--amber-soft) !important;color:var(--amber-text) !important;border-radius:8px !important;font-family:var(--font-body) !important;font-weight:600 !important;
 }
 .getic-swal-actions{gap:10px !important;}
 .getic-swal-closebtn{color:var(--text-dim) !important;}

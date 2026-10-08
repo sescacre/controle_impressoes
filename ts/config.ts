@@ -20,9 +20,9 @@ export const CONTRATO_MENSAL = { impressao: 4810.00, locacao: 2496.00 }; // loca
 /* Total anual do Contrato AC-2022-CS-003, confirmado pelo usuário: R$ 84.792,00 (= 12 x mensal) */
 export const CONTRATO_ANUAL = { impressao: 57720.00, locacao: 29952.00, total: 87672.00 }; // locação suplementada por aditivo (29.952,00/ano)
 
-export const ADMIN_USER = 'admin';
-export const ADMIN_PASS = 'c8s7e9s1';
-export const ADMIN_BUTTON_IDS = ['btnNovoMes', 'btnExcel', 'btnSql', 'btnRecibo', 'historyPanel'];
+// Login validado no servidor contra a tabela `usuarios` (ver POST /api/auth/login em
+// server/api.js) — nenhuma credencial fica mais no bundle do cliente.
+export const ADMIN_BUTTON_IDS = ['btnNovoMes', 'btnExcel', 'btnSql', 'btnRecibo', 'btnCadastrarUsuario', 'historyPanel'];
 
 export const CDN = {
   swal: {

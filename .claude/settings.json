@@ -29,7 +29,16 @@
       "Bash(powershell -NoProfile -Command \"Stop-Process -Id 2144 -Force\")",
       "Bash(node scripts/free-port.js 3009)",
       "Bash(node decode.js \"/c/Users/rmatos/AppData/Roaming/Mozilla/Firefox/Profiles/50jztifa.default-release/storage/default/file++++D++wamp64+www+controle_impressoes+dashboard_getic_standalone.html/ls/data.sqlite\")",
-      "Bash(grep -n \"\\\\$\\(\" ts/main.ts)"
+      "Bash(grep -n \"\\\\$\\(\" ts/main.ts)",
+      "Bash(py --version)",
+      "Bash(NODE_PATH=\"C:/Users/rmatos/AppData/Local/Temp/claude/c--Projetos-SESC-controle-impressoes/4139734e-ab22-47ea-9e49-061b93ef47d3/scratchpad/pw/node_modules\" node gen.js \"c:/Projetos SESC/controle_impressoes/analise-seguranca.pdf\")",
+      "Bash(NODE_PATH=\"C:/Users/rmatos/AppData/Local/Temp/claude/c--Projetos-SESC-controle-impressoes/4139734e-ab22-47ea-9e49-061b93ef47d3/scratchpad/pw/node_modules\" node preview.js)",
+      "Bash(node \"C:\\\\Users\\\\rmatos\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Projetos-SESC-controle-impressoes\\\\4139734e-ab22-47ea-9e49-061b93ef47d3\\\\scratchpad\\\\xlsxread\\\\createUsuarios.js\")",
+      "Bash(node checkRegister.js)",
+      "Bash(curl -s -X POST http://localhost:3915/api/usuarios -H \"Content-Type: application/json\" -d '{\"usuario\":\"teste.silva\",\"nome\":\"Dup\",\"senha\":\"123456\"}')",
+      "Bash(curl -s -X POST http://localhost:3915/api/usuarios -H \"Content-Type: application/json\" -d '{\"usuario\":\"x\",\"nome\":\"Curto\",\"senha\":\"123\"}')",
+      "Bash(curl -s -i -X POST http://192.168.5.231:3009/api/usuarios -H \"Content-Type: application/json\" -d '{\"usuario\":\"teste_diag\",\"nome\":\"Teste Diag\",\"senha\":\"123456\"}')",
+      "Bash(node checkBadge.js)"
     ]
   }
 }

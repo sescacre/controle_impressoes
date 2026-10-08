@@ -11,7 +11,7 @@ A aplicação usa um banco de dados **MySQL compartilhado no servidor** (via uma
 - **Lançamento de leituras**: tela para registrar as leituras atuais de cada equipamento a cada novo mês.
 - **Histórico**: navegação entre meses já lançados, com recálculo automático de quantidade de cópias, valor e percentual de consumo.
 - **Exportações**: Excel (.xlsx, no mesmo layout da planilha original), PDF (relatório/recibo) e geração de SQL.
-- **Área administrativa**: protegida por usuário/senha (ver [Segurança](#segurança)), libera as ações de lançar mês, exportar e gerar SQL.
+- **Área administrativa**: protegida por usuário/senha (ver [Segurança](#segurança)), libera as ações de lançar mês, exportar, gerar SQL e cadastrar novos usuários.
 - **Regras de preço centralizadas**: valor por folha e valor de locação calculados por modelo de máquina (`ts/data/pricing.ts`), aplicados retroativamente caso mudem.
 
 ## Stack técnica
@@ -19,8 +19,8 @@ A aplicação usa um banco de dados **MySQL compartilhado no servidor** (via uma
 - **TypeScript** compilado para IIFE único via [esbuild](https://esbuild.github.io/), sem framework de UI (DOM manipulado diretamente).
 - **Chart.js**, **jsPDF**, **SweetAlert2** e **SheetJS (xlsx)** — carregados por CDN em runtime (com fallback `cdnjs` → `jsdelivr`, ver `ts/config.ts` e `ts/utils/scriptLoader.ts`) ou usados como tipos de desenvolvimento via `devDependencies`.
 - **CSS puro**, organizado por responsabilidade em `css/` (variáveis, base, header, tabelas, modal, etc.).
-- **Node (`http` nativo) + MySQL (`mysql2`)** como backend: `server.js` serve os arquivos estáticos e expõe a API `/api/...` (`server/api.js`, `server/db.js`) que lê/grava no banco compartilhado.
-- **Docker + Nginx** para build e serviço dos arquivos estáticos em produção (a integração do container de produção com o MySQL ainda depende de uma etapa futura — ver [Persistência de dados](#persistência-de-dados)).
+- **Node (`http` nativo) + MySQL (`mysql2`)** como backend: `server.js` serve os arquivos estáticos e expõe a API `/api/...` (`server/api.js`, `server/db.js`) que lê/grava no banco compartilhado. Senhas de usuário são hasheadas com **bcryptjs** antes de ir para o banco.
+- **Docker** com build multi-stage: a primeira etapa builda o TypeScript, a segunda roda o próprio `server.js` (Node) em produção — ver [Build e execução via Docker](#build-e-execução-via-docker).
 
 ## Estrutura do projeto
 
@@ -52,15 +52,15 @@ legacy/                  # versão HTML standalone anterior, mantida como refer�
 server.js                # serve os arquivos estáticos e delega /api/... para server/api.js
 server/
   db.js                  # pool de conexão MySQL (lê host/usuário/senha de variáveis de ambiente)
-  api.js                  # rotas REST /api/db/:colecao e /api/import, usadas por ts/data/apiDb.ts
-db/schema.sql             # schema MySQL (equipamentos, meses, leituras) para configurar o banco
+  api.js                  # rotas REST /api/db/:colecao, /api/import e /api/usuarios, usadas por ts/data/apiDb.ts e ts/ui/admin.ts
+db/schema.sql             # schema MySQL (equipamentos, meses, leituras, usuarios) para configurar o banco
 ```
 
 ## Como rodar localmente
 
 Pré-requisitos: Node.js 20+, npm e um MySQL acessível (ex.: WampServer).
 
-1. Configure o banco: rode `db/schema.sql` no seu MySQL (ex.: `mysql -u root -p < db/schema.sql`, ou importe pelo phpMyAdmin). Isso cria o banco `controle_impressoes` com as tabelas `equipamentos`, `meses` e `leituras`.
+1. Configure o banco: rode `db/schema.sql` no seu MySQL (ex.: `mysql -u root -p < db/schema.sql`, ou importe pelo phpMyAdmin). Isso cria o banco `controle_impressoes` com as tabelas `equipamentos`, `meses`, `leituras` e `usuarios` (já com a conta `admin` semeada — ver [Segurança](#segurança)).
 2. Configure as credenciais em `.env` (na raiz do projeto, já listado no `.gitignore`):
 
    ```
@@ -96,11 +96,13 @@ docker build -t printgest .
 docker run --rm -p 3009:3009 printgest
 ```
 
-O `Dockerfile` usa build multi-stage: a primeira etapa roda `npm ci` + `npm run build` (checagem de tipos e bundle); a segunda copia `dist/`, `html/`, `css/` e `assets/` para uma imagem `nginx-unprivileged`, que serve tudo na porta 3009 (ver `nginx.conf`). A porta segue a sequência já usada no host (3000–3005 ocupadas por outros serviços/Dokploy; 8080 também ocupada); ajuste `nginx.conf` (Docker) ou a variável `PORT` (`npm start`, Nixpacks) se precisar de outra.
+O `Dockerfile` usa build multi-stage: a primeira etapa roda `npm ci` + `npm run build` (checagem de tipos e bundle); a segunda instala só as dependências de produção e roda **`node server.js`** (estáticos + API ligada ao MySQL), na porta 3009. O `nginx.conf` do repositório não é mais usado pela imagem Docker (ficou como referência). A porta segue a sequência já usada no host (3000–3005 ocupadas por outros serviços/Dokploy; 8080 também ocupada); ajuste a variável `PORT` se precisar de outra.
+
+Como a imagem não embute `.env` (fica fora do build por segurança), as variáveis `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` e `DB_NAME` precisam ser configuradas como variáveis de ambiente na plataforma de deploy (ex.: aba "Environment" no Dokploy) — sem elas, `server/db.js` cai nos valores padrão (`127.0.0.1`/`root`/sem senha) e não encontra o MySQL em produção.
 
 ## Persistência de dados
 
-Todo o estado (equipamentos, meses lançados e leituras) é gravado em um **banco MySQL compartilhado no servidor**, não mais no navegador. O front-end fala com esse banco através de `ts/data/apiDb.ts`, que expõe a mesma API de coleções usada antes (`collection().doc().get()/set()/update()`) só que via `fetch("/api/db/...")`; quem de fato lê/grava no MySQL é `server/api.js` + `server/db.js` (pool `mysql2`, credenciais em variáveis de ambiente — ver `.env`). O schema fica em `db/schema.sql`. Na primeira execução com o banco vazio, o app semeia automaticamente os equipamentos e o histórico real de meses (`ts/data/seed.ts`).
+Todo o estado (equipamentos, meses lançados e leituras) é gravado em um **banco MySQL compartilhado no servidor**, não mais no navegador. O front-end fala com esse banco através de `ts/data/apiDb.ts`, que expõe a mesma API de coleções usada antes (`collection().doc().get()/set()/update()`) só que via `fetch("/api/db/...")`; quem de fato lê/grava no MySQL é `server/api.js` + `server/db.js` (pool `mysql2`, credenciais em variáveis de ambiente — ver `.env`). O schema fica em `db/schema.sql`, e inclui também a tabela `usuarios` (contas com acesso à área administrativa — ver [Segurança](#segurança)). Na primeira execução com o banco vazio, o app semeia automaticamente os equipamentos e o histórico real de meses (`ts/data/seed.ts`).
 
 Como os dados agora ficam no servidor, qualquer navegador ou computador que acesse o mesmo endereço enxerga os mesmos lançamentos — diferente da versão anterior, em que cada navegador tinha sua própria cópia isolada em `localStorage`.
 
@@ -108,11 +110,17 @@ Como os dados agora ficam no servidor, qualquer navegador ou computador que aces
 
 Quem já usava a versão anterior (só `localStorage`) pode ter lançamentos que só existem em um navegador específico. A área administrativa tem o botão **"Importar dados deste navegador"**, que lê o `localStorage` do navegador atual e envia para o banco compartilhado (substituindo, no servidor, os registros de mês/equipamento que também existirem localmente). Use-o uma vez, no navegador onde os dados reais estão, depois que o backend estiver configurado e no ar.
 
-> ⚠️ **Status atual**: a integração está validada rodando localmente contra um MySQL (ex.: WampServer). A imagem Docker de produção (`Dockerfile`/`nginx.conf`) ainda serve só os arquivos estáticos, sem o backend/MySQL — portanto o deploy em produção precisa ser adaptado (rodar `server.js` em vez de nginx puro, e apontar para um MySQL acessível pelo host) antes que a versão compartilhada substitua a de produção atual.
+> ⚠️ **Status atual**: a integração está validada rodando localmente e em produção contra um MySQL dedicado. A imagem Docker (`Dockerfile`) já roda `server.js` (estáticos + API), não mais nginx puro — ver [Build e execução via Docker](#build-e-execução-via-docker).
 
 ## Segurança
 
-O botão **"🔒 Área admin"** libera ações sensíveis (lançar mês, exportar Excel/SQL, baixar relatório) mediante usuário e senha. Essa validação é feita **inteiramente no cliente** (`ts/config.ts` / `ts/ui/admin.ts`) e as credenciais ficam visíveis em texto claro no bundle JavaScript gerado — portanto **não é um mecanismo de segurança real**, apenas uma barreira de uso para evitar edições acidentais por usuários comuns. Não trate essa aplicação como apta a proteger dados sensíveis ou impedir acesso de usuários mal-intencionados; para isso seria necessária autenticação no lado do servidor.
+O botão **"🔒 Área admin"** libera ações sensíveis (lançar mês, exportar Excel/SQL, baixar relatório, cadastrar usuário) mediante usuário e senha. Essa validação ainda é feita **inteiramente no cliente** (`ts/config.ts` / `ts/ui/admin.ts`) e as credenciais padrão ficam visíveis em texto claro no bundle JavaScript gerado — portanto **ainda não é um mecanismo de segurança real**, apenas uma barreira de uso para evitar edições acidentais por usuários comuns. Não trate essa aplicação como apta a proteger dados sensíveis ou impedir acesso de usuários mal-intencionados; para isso é necessária autenticação no lado do servidor (próximo passo planejado).
+
+### Tabela `usuarios`
+
+Já existe uma tabela `usuarios` no banco (`db/schema.sql`), semeada com a conta `admin` (mesma senha hoje usada no login do cliente). As senhas são **sempre hasheadas com bcrypt** (`bcryptjs`, custo 10) antes de ir para o banco — nunca em texto puro. Dentro da área admin, o botão **"+ Cadastrar novo usuário"** abre um formulário (modal SweetAlert2 com nome, usuário, senha e confirmação de senha) que grava um novo registro via `POST /api/usuarios` (`server/api.js`).
+
+> ⚠️ **Importante**: essa tabela ainda **não é consultada no login** — o botão "Área admin" continua validando contra `ADMIN_USER`/`ADMIN_PASS` no cliente. Além disso, `POST /api/usuarios` (como toda a API `/api/...` hoje) **não exige nenhuma autenticação no servidor**: qualquer pessoa com acesso de rede ao servidor pode chamar essa rota diretamente, sem passar pela tela de login. A tabela e o cadastro são a base para a próxima etapa (login validado no servidor + sessão), que ainda precisa ser implementada para fechar essa brecha.
 
 ## Contexto do contrato
 

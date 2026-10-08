@@ -2,6 +2,7 @@
 // mesma semântica de coleções/documentos que o app já usava com localStorage
 // (ver ts/types.ts LocalDb / ts/data/localDb.ts), agora com dados visíveis em
 // qualquer navegador ou computador que acesse este servidor.
+const bcrypt = require('bcryptjs');
 const { pool } = require('./db');
 
 // `dt` chega como string "YYYY-MM-DD HH:MM:SS" (dateStrings: true no pool, ver server/db.js),
@@ -130,6 +131,41 @@ async function handleApi(req, res, pathname, query) {
         conn.release();
       }
       sendJson(res, 200, { status: 'imported' });
+      return true;
+    }
+
+    if (parts[1] === 'auth' && parts[2] === 'login' && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      const usuario = String(body.usuario || '').trim();
+      const senha = String(body.senha || '');
+      const [rows] = await pool.execute('SELECT nome, senha_hash FROM usuarios WHERE usuario = ?', [usuario]);
+      const row = rows[0];
+      const ok = row ? await bcrypt.compare(senha, row.senha_hash) : false;
+      if (!ok) { sendJson(res, 401, { error: 'Usuário ou senha inválidos' }); return true; }
+      sendJson(res, 200, { status: 'ok', nome: row.nome });
+      return true;
+    }
+
+    if (parts[1] === 'usuarios' && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      const usuario = String(body.usuario || '').trim();
+      const nome = String(body.nome || '').trim();
+      const senha = String(body.senha || '');
+      if (!usuario || !nome || senha.length < 6) {
+        sendJson(res, 400, { error: 'Preencha nome, usuário e uma senha com pelo menos 6 caracteres.' });
+        return true;
+      }
+      const senha_hash = await bcrypt.hash(senha, 10);
+      try {
+        await pool.execute(
+          'INSERT INTO usuarios (usuario, nome, senha_hash, created_at) VALUES (?, ?, ?, ?)',
+          [usuario, nome, senha_hash, toMysqlDatetime()],
+        );
+      } catch (e) {
+        if (e.code === 'ER_DUP_ENTRY') { sendJson(res, 409, { error: 'Já existe um usuário com esse nome de login.' }); return true; }
+        throw e;
+      }
+      sendJson(res, 200, { status: 'created' });
       return true;
     }
 

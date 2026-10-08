@@ -41,6 +41,24 @@ CREATE TABLE leituras (
   UNIQUE KEY uq_mes_item (month_key, item)
 ) ENGINE=InnoDB;
 
+-- Usuários com acesso à área administrativa. Sem DROP TABLE (diferente das
+-- tabelas acima): reexecutar este script não pode apagar as contas já
+-- cadastradas. Senha nunca em texto puro — só o hash (bcrypt) via server/api.js.
+CREATE TABLE IF NOT EXISTS usuarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario VARCHAR(60) NOT NULL UNIQUE,
+  nome VARCHAR(120) NOT NULL,
+  senha_hash VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL
+) ENGINE=InnoDB;
+
+-- Usuário admin "de bootstrap" (mesmas credenciais hoje hardcoded em ts/config.ts:
+-- ADMIN_USER/ADMIN_PASS = admin/c8s7e9s1). Hash bcrypt da senha "c8s7e9s1".
+-- ON DUPLICATE KEY UPDATE: reexecutar o script atualiza o hash em vez de duplicar a conta.
+INSERT INTO usuarios (usuario, nome, senha_hash, created_at)
+VALUES ('admin', 'Administrador', '$2b$10$WA9//RKJpwbYqQvAYpdEO.Zygwp1lh.VXi469t8ZxY9ehTeL0JWMq', NOW())
+ON DUPLICATE KEY UPDATE senha_hash = VALUES(senha_hash);
+
 -- Cadastro de equipamentos (26 registros)
 INSERT INTO equipamentos (item, grupo, setor, cod_orc, sigla, maquina, tipo_equip, valor_loc, l_ant, l_atual, valor_unit) VALUES (1, 'SESC RIO BRANCO', 'Gerencia de Comunicação Institucional - DPI - Bosque', '001400160102', 'GEDPI', 'C7020', 'Multifuncional', 184, 116619, 118129, 0.38);
 INSERT INTO equipamentos (item, grupo, setor, cod_orc, sigla, maquina, tipo_equip, valor_loc, l_ant, l_atual, valor_unit) VALUES (2, 'SESC RIO BRANCO', 'Ensino Fundamental - Bosque', '001600050102', 'ESCOLA', 'C306', 'Multifuncional', 184, 33238, 35590, 0.38);
