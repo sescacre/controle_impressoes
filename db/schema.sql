@@ -44,9 +44,11 @@ CREATE TABLE leituras (
 -- Usuários com acesso à área administrativa. Sem DROP TABLE (diferente das
 -- tabelas acima): reexecutar este script não pode apagar as contas já
 -- cadastradas. Senha nunca em texto puro — só o hash (bcrypt) via server/api.js.
+-- "usuario" usa collation _bin (case sensitive): "Admin" e "admin" são logins
+-- distintos, tanto na unicidade quanto na checagem feita em POST /api/auth/login.
 CREATE TABLE IF NOT EXISTS usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  usuario VARCHAR(60) NOT NULL UNIQUE,
+  usuario VARCHAR(60) COLLATE utf8mb4_bin NOT NULL UNIQUE,
   nome VARCHAR(120) NOT NULL,
   senha_hash VARCHAR(255) NOT NULL,
   created_at DATETIME NOT NULL

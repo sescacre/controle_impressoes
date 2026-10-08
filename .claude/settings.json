@@ -38,7 +38,10 @@
       "Bash(curl -s -X POST http://localhost:3915/api/usuarios -H \"Content-Type: application/json\" -d '{\"usuario\":\"teste.silva\",\"nome\":\"Dup\",\"senha\":\"123456\"}')",
       "Bash(curl -s -X POST http://localhost:3915/api/usuarios -H \"Content-Type: application/json\" -d '{\"usuario\":\"x\",\"nome\":\"Curto\",\"senha\":\"123\"}')",
       "Bash(curl -s -i -X POST http://192.168.5.231:3009/api/usuarios -H \"Content-Type: application/json\" -d '{\"usuario\":\"teste_diag\",\"nome\":\"Teste Diag\",\"senha\":\"123456\"}')",
-      "Bash(node checkBadge.js)"
+      "Bash(node checkBadge.js)",
+      "Bash(curl -s -i -X POST http://localhost:3920/api/auth/login -H \"Content-Type: application/json\" -d '{\"usuario\":\"Admin\",\"senha\":\"c8s7e9s1\"}')",
+      "Bash(curl -s -i -X POST http://localhost:3920/api/auth/login -H \"Content-Type: application/json\" -d '{\"usuario\":\"ADMIN\",\"senha\":\"c8s7e9s1\"}')",
+      "Bash(curl -s -i -X POST http://localhost:3920/api/auth/login -H \"Content-Type: application/json\" -d '{\"usuario\":\"admin\",\"senha\":\"c8s7e9s1\"}')"
     ]
   }
 }
