@@ -1,13 +1,19 @@
-// Servidor estático mínimo (sem dependências), usado quando o deploy é feito
-// via Nixpacks/buildpack (que exige um comando de start) em vez do Dockerfile+nginx.
-// Replica o comportamento de nginx.conf: reescreve "/" para "/html/index.html"
-// e desabilita cache para .js/.css (build sem hash no nome do arquivo).
+// Servidor estático + API do banco compartilhado (MySQL). Serve os arquivos do
+// app (réplica do comportamento de nginx.conf: reescreve "/" para "/html/index.html"
+// e desabilita cache para .js/.css) e responde as rotas /api/... consultadas pelo
+// front-end, para que os dados fiquem visíveis em qualquer navegador/computador
+// que acesse este servidor, em vez de ficarem presos no localStorage de um único navegador.
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { URL } = require('url');
+
+try { process.loadEnvFile(); } catch { /* sem .env (ex.: produção, variáveis já vêm do host) */ }
+
+const { handleApi } = require('./server/api');
 
 const PORT = process.env.PORT || 3009;
-const ROOT = __dirname; 
+const ROOT = __dirname;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -25,8 +31,19 @@ const MIME_TYPES = {
 
 const NO_CACHE_EXTENSIONS = new Set(['.js', '.css']);
 
-const server = http.createServer((req, res) => {
-  let urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
+const server = http.createServer(async (req, res) => {
+  const parsedUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+
+  if (parsedUrl.pathname.startsWith('/api/')) {
+    const query = Object.fromEntries(parsedUrl.searchParams);
+    const handled = await handleApi(req, res, parsedUrl.pathname, query);
+    if (handled) return;
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Rota de API não encontrada');
+    return;
+  }
+
+  let urlPath = decodeURIComponent(parsedUrl.pathname);
   if (urlPath === '/') urlPath = '/html/index.html';
 
   const filePath = path.join(ROOT, urlPath);

@@ -2,7 +2,7 @@
 
 O **PrintGest** (Sistema de Gestão Centralizada de Impressões) é um dashboard para acompanhar custos de impressão e locação de equipamentos no âmbito do contrato **AC-2022-CS-003**. Ele centraliza leituras mensais de contadores por equipamento, calcula custos por página e por período, e exibe KPIs, gráficos e históricos que facilitam o controle orçamentário e a conferência de faturas da locadora.
 
-A aplicação utiliza atualmente o armazenamento local do navegador via `localStorage` (numa camada que imita a API de coleções de um banco de documentos), e relatórios podem ser exportados em Excel, PDF ou SQL diretamente da interface. A arquitetura pode ser integrada a um backend e a um banco de dados futuramente, conforme a necessidade do projeto.
+A aplicação usa um banco de dados **MySQL compartilhado no servidor** (via uma pequena API em `server.js`/`server/`), então os dados lançados ficam visíveis em qualquer navegador ou computador que acesse o mesmo endereço — não ficam mais presos ao `localStorage` de um navegador específico. Relatórios podem ser exportados em Excel, PDF ou SQL diretamente da interface.
 
 ## Funcionalidades
 
@@ -19,7 +19,8 @@ A aplicação utiliza atualmente o armazenamento local do navegador via `localSt
 - **TypeScript** compilado para IIFE único via [esbuild](https://esbuild.github.io/), sem framework de UI (DOM manipulado diretamente).
 - **Chart.js**, **jsPDF**, **SweetAlert2** e **SheetJS (xlsx)** — carregados por CDN em runtime (com fallback `cdnjs` → `jsdelivr`, ver `ts/config.ts` e `ts/utils/scriptLoader.ts`) ou usados como tipos de desenvolvimento via `devDependencies`.
 - **CSS puro**, organizado por responsabilidade em `css/` (variáveis, base, header, tabelas, modal, etc.).
-- **Docker + Nginx** para build e serviço dos arquivos estáticos em produção.
+- **Node (`http` nativo) + MySQL (`mysql2`)** como backend: `server.js` serve os arquivos estáticos e expõe a API `/api/...` (`server/api.js`, `server/db.js`) que lê/grava no banco compartilhado.
+- **Docker + Nginx** para build e serviço dos arquivos estáticos em produção (a integração do container de produção com o MySQL ainda depende de uma etapa futura — ver [Persistência de dados](#persistência-de-dados)).
 
 ## Estrutura do projeto
 
@@ -30,15 +31,15 @@ ts/
   state.ts             # estado em memória da aplicação
   types.ts             # tipos de domínio e das libs globais carregadas por CDN
   data/
-    repository.ts      # carga/gravação no "banco" local (localStorage)
-    localDb.ts          # implementação da API de coleções sobre localStorage
+    repository.ts      # carga/gravação no banco (via apiDb.ts)
+    apiDb.ts             # implementação da API de coleções sobre fetch("/api/db/...")
     pricing.ts          # regras de valor por folha e por locação
     rows.ts              # montagem das linhas de cada mês (cálculo de custo/percentual)
     seed.ts               # dados semente (equipamentos e histórico real)
     categorias.ts          # agrupamentos/categorias usados nos gráficos
   ui/
     render.ts           # orquestração da renderização da página
-    kpis.ts, charts.ts, tables.ts, filters.ts, selectors.ts, lancamento.ts, admin.ts
+    kpis.ts, charts.ts, tables.ts, filters.ts, selectors.ts, lancamento.ts, admin.ts, importar.ts
   export/
     excel.ts, pdf.ts, sql.ts, download.ts
   utils/
@@ -48,25 +49,43 @@ css/                    # folhas de estilo
 assets/                 # logo, ícones e fontes locais
 dist/app.js              # bundle gerado pelo build (gerado, não versionado no runtime de prod)
 legacy/                  # versão HTML standalone anterior, mantida como referência
+server.js                # serve os arquivos estáticos e delega /api/... para server/api.js
+server/
+  db.js                  # pool de conexão MySQL (lê host/usuário/senha de variáveis de ambiente)
+  api.js                  # rotas REST /api/db/:colecao e /api/import, usadas por ts/data/apiDb.ts
+db/schema.sql             # schema MySQL (equipamentos, meses, leituras) para configurar o banco
 ```
 
 ## Como rodar localmente
 
-Pré-requisitos: Node.js 20+ e npm.
+Pré-requisitos: Node.js 20+, npm e um MySQL acessível (ex.: WampServer).
 
-```bash
-npm install
-npm run dev
-```
+1. Configure o banco: rode `db/schema.sql` no seu MySQL (ex.: `mysql -u root -p < db/schema.sql`, ou importe pelo phpMyAdmin). Isso cria o banco `controle_impressoes` com as tabelas `equipamentos`, `meses` e `leituras`.
+2. Configure as credenciais em `.env` (na raiz do projeto, já listado no `.gitignore`):
 
-O `dev` sobe um servidor local (esbuild `--servedir`) em **http://localhost:3009** — mesma porta usada em produção (ver [Build e execução via Docker](#build-e-execução-via-docker)) —, com bundle e sourcemap gerados a partir de `ts/main.ts`. Abra `html/index.html` pelo servidor (ex.: `http://localhost:3009/html/index.html`).
+   ```
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_USER=root
+   DB_PASSWORD="sua_senha"
+   DB_NAME=controle_impressoes
+   ```
+3. Instale as dependências e suba o app:
+
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+`npm run dev` libera a porta 3009 (se um processo anterior ficou preso nela), gera `dist/app.js` com sourcemap e sobe `server.js` em **http://localhost:3009** — mesma porta usada em produção (ver [Build e execução via Docker](#build-e-execução-via-docker)) —, servindo os arquivos estáticos **e** a API `/api/...` que fala com o MySQL. Para rebuild automático a cada alteração em `ts/` enquanto o servidor já está no ar, rode `npm run watch` em outro terminal.
 
 ### Scripts disponíveis
 
 | Script      | Descrição                                                                 |
 |-------------|----------------------------------------------------------------------------|
-| `npm run dev`     | Build com sourcemap + servidor estático com live reload manual (esbuild). |
-| `npm run watch`   | Rebuild automático a cada alteração em `ts/`, sem servidor.               |
+| `npm run dev`     | Libera a porta 3009, builda com sourcemap e sobe `server.js` (estáticos + API ligada ao MySQL). |
+| `npm start`       | Sobe só `server.js` a partir do `dist/app.js` já existente (usado em produção). |
+| `npm run watch`   | Rebuild automático de `dist/app.js` a cada alteração em `ts/`, sem servidor. |
 | `npm run build`   | Checagem de tipos (`tsc`) + bundle minificado de produção em `dist/app.js`. |
 | `npm run typecheck` | Roda apenas o `tsc` (sem emitir arquivos), útil em CI/pre-commit.        |
 
@@ -81,9 +100,15 @@ O `Dockerfile` usa build multi-stage: a primeira etapa roda `npm ci` + `npm run 
 
 ## Persistência de dados
 
-Atualmente, todo o estado (equipamentos, meses lançados e leituras) é gravado no `localStorage` do navegador através de uma camada (`ts/data/localDb.ts`) que expõe uma API de coleções (`collection().doc().get()/set()/update()`), inspirada em bancos de documentos. Na primeira execução, o app semeia automaticamente os equipamentos e o histórico real de meses (`ts/data/seed.ts`). Essa camada pode ser substituída ou conectada a um backend e a um banco de dados quando essa evolução for necessária.
+Todo o estado (equipamentos, meses lançados e leituras) é gravado em um **banco MySQL compartilhado no servidor**, não mais no navegador. O front-end fala com esse banco através de `ts/data/apiDb.ts`, que expõe a mesma API de coleções usada antes (`collection().doc().get()/set()/update()`) só que via `fetch("/api/db/...")`; quem de fato lê/grava no MySQL é `server/api.js` + `server/db.js` (pool `mysql2`, credenciais em variáveis de ambiente — ver `.env`). O schema fica em `db/schema.sql`. Na primeira execução com o banco vazio, o app semeia automaticamente os equipamentos e o histórico real de meses (`ts/data/seed.ts`).
 
-> Como os dados vivem no navegador do usuário, limpar o cache/localStorage do navegador apaga o histórico local. Use as exportações (Excel/PDF/SQL) para manter backups fora do navegador.
+Como os dados agora ficam no servidor, qualquer navegador ou computador que acesse o mesmo endereço enxerga os mesmos lançamentos — diferente da versão anterior, em que cada navegador tinha sua própria cópia isolada em `localStorage`.
+
+### Importar dados que ficaram presos em um navegador (migração da versão antiga)
+
+Quem já usava a versão anterior (só `localStorage`) pode ter lançamentos que só existem em um navegador específico. A área administrativa tem o botão **"Importar dados deste navegador"**, que lê o `localStorage` do navegador atual e envia para o banco compartilhado (substituindo, no servidor, os registros de mês/equipamento que também existirem localmente). Use-o uma vez, no navegador onde os dados reais estão, depois que o backend estiver configurado e no ar.
+
+> ⚠️ **Status atual**: a integração está validada rodando localmente contra um MySQL (ex.: WampServer). A imagem Docker de produção (`Dockerfile`/`nginx.conf`) ainda serve só os arquivos estáticos, sem o backend/MySQL — portanto o deploy em produção precisa ser adaptado (rodar `server.js` em vez de nginx puro, e apontar para um MySQL acessível pelo host) antes que a versão compartilhada substitua a de produção atual.
 
 ## Segurança
 

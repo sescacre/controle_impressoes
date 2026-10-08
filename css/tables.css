@@ -1,7 +1,7 @@
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.02em;color:var(--text-dim);padding:9px 10px;border-bottom:1px solid var(--panel-border);position:sticky;top:0;background:var(--panel);cursor:pointer;user-select:none;}
 thead th:hover{color:var(--text);}
-thead th.num,tbody td.num{text-align:right;}
+thead th.num,tbody td.num{text-align:right;white-space:nowrap;}
 tbody td{padding:8px 10px;border-bottom:1px solid var(--grid);font-family:var(--font-mono);font-size:12.5px;}
 tbody td.name{font-family:var(--font-body);font-size:13px;}
 tbody tr:hover{background:var(--accent-soft);}

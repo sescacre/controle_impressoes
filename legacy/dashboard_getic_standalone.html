@@ -1297,7 +1297,7 @@ function gerarRelatorioPdf(){
     doc.setPage(p);
     doc.setTextColor(140,150,165); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
     doc.text('Página '+p+' de '+pageCount, PAGE_W-MARGIN, PAGE_H-6, {align:'right'});
-    doc.text('Centro de custo = COD. ORÇ. da planilha de origem.', MARGIN, PAGE_H-6);
+    doc.text('', MARGIN, PAGE_H-6);
   }
 
   return doc;

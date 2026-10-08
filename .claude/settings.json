@@ -13,7 +13,23 @@
       "Bash(echo \"exit=$?\")",
       "Bash(rm -f \"C:/Users/rmatos/AppData/Local/Temp/claude/c--Projetos-SESC-controle-impressoes/d1d15066-f415-4c05-b629-8bab8f4a1e34/scratchpad/out.txt\" \"C:/Users/rmatos/AppData/Local/Temp/claude/c--Projetos-SESC-controle-impressoes/d1d15066-f415-4c05-b629-8bab8f4a1e34/scratchpad/out_utf8.txt\")",
       "Bash(mkdir -p \"C:/Projetos SESC/controle_impressoes/docs\")",
-      "Bash(cp \"C:/Users/rmatos/AppData/Local/Temp/claude/c--Projetos-SESC-controle-impressoes/d1d15066-f415-4c05-b629-8bab8f4a1e34/scratchpad/PrintGest_Documentacao.pdf\" \"C:/Projetos SESC/controle_impressoes/docs/PrintGest_Documentacao.pdf\")"
+      "Bash(cp \"C:/Users/rmatos/AppData/Local/Temp/claude/c--Projetos-SESC-controle-impressoes/d1d15066-f415-4c05-b629-8bab8f4a1e34/scratchpad/PrintGest_Documentacao.pdf\" \"C:/Projetos SESC/controle_impressoes/docs/PrintGest_Documentacao.pdf\")",
+      "Bash(node -e ' *)",
+      "Bash(node gen_sql.js)",
+      "Bash(npm install *)",
+      "Bash(powershell -NoProfile -Command 'Get-Process | Where-Object { $_.ProcessName -match '\\\\''mysqld|wampmanager'\\\\'' } | Select-Object ProcessName,Id')",
+      "Bash(powershell -NoProfile -Command \"Get-NetTCPConnection -LocalPort 3306 -State Listen -ErrorAction SilentlyContinue\")",
+      "Bash(where mysql *)",
+      "Read(//d/wamp64/bin/mysql/**)",
+      "Read(//d/wamp64/bin/mysql/mysql8.4.7/bin/**)",
+      "Bash(/d/wamp64/bin/mysql/mysql8.4.7/bin/mysql.exe -u root '--password=#eccg0203' -e 'SELECT VERSION\\(\\);')",
+      "Bash(curl -s http://localhost:3009/ -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Bash(powershell -NoProfile -Command \"Get-NetTCPConnection -LocalPort 3009 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess\")",
+      "Bash(powershell -NoProfile -Command \"Get-Process -Id 2144,3012 -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,Path\")",
+      "Bash(powershell -NoProfile -Command \"Stop-Process -Id 2144 -Force\")",
+      "Bash(node scripts/free-port.js 3009)",
+      "Bash(node decode.js \"/c/Users/rmatos/AppData/Roaming/Mozilla/Firefox/Profiles/50jztifa.default-release/storage/default/file++++D++wamp64+www+controle_impressoes+dashboard_getic_standalone.html/ls/data.sqlite\")",
+      "Bash(grep -n \"\\\\$\\(\" ts/main.ts)"
     ]
   }
 }

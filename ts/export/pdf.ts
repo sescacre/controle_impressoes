@@ -128,7 +128,7 @@ function gerarRelatorioPdf(jsPDFCtor: NonNullable<Window['jspdf']>['jsPDF'], log
   function drawTableHeader(y: number): number {
     doc.setFillColor(21, 37, 64);
     doc.rect(MARGIN, y, totalW, 7, 'F');
-    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(6.8);
     let x = MARGIN;
     COLS.forEach(c => {
       const tx = c.align === 'right' ? x + c.w - 1.5 : x + 1.5;
@@ -140,7 +140,7 @@ function gerarRelatorioPdf(jsPDFCtor: NonNullable<Window['jspdf']>['jsPDF'], log
 
   function drawRow(y: number, d: LinhaMes, idx: number): void {
     if (idx % 2 === 1) { doc.setFillColor(244, 246, 249); doc.rect(MARGIN, y, totalW, rowH, 'F'); }
-    doc.setTextColor(27, 36, 52); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.3);
+    doc.setTextColor(27, 36, 52); doc.setFont('helvetica', 'normal'); doc.setFontSize(6.6);
     let x = MARGIN;
     COLS.forEach(c => {
       let text: string;
@@ -148,7 +148,9 @@ function gerarRelatorioPdf(jsPDFCtor: NonNullable<Window['jspdf']>['jsPDF'], log
       else if (c.key === 'valor_loc' || c.key === 'valor_copias' || c.key === 'geral') text = fmtR(d[c.key]).replace('R$ ', '');
       else if (c.key === 'pct') text = d.pct.toFixed(1) + '%';
       else text = String(d[c.key] ?? '');
-      if (c.key === 'setor') text = truncateToWidth(doc, text, c.w - 3);
+      // Colunas de texto são truncadas com reticências para nunca invadir a coluna seguinte
+      // (siglas e códigos de centro de custo mais longos, ex. "SESC - LER - XAPURI").
+      if (c.align === 'left' && c.key !== 'item') text = truncateToWidth(doc, text, c.w - 3);
       const tx = c.align === 'right' ? x + c.w - 1.5 : x + 1.5;
       doc.text(text, tx, y + 4.3, { align: c.align });
       x += c.w;
@@ -158,7 +160,7 @@ function gerarRelatorioPdf(jsPDFCtor: NonNullable<Window['jspdf']>['jsPDF'], log
   function drawTotalsRow(y: number): number {
     doc.setFillColor(21, 37, 64);
     doc.rect(MARGIN, y, totalW, 7, 'F');
-    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.6);
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(6.9);
     doc.text('TOTAL GERAL', MARGIN + 1.5, y + 4.8);
     let x = MARGIN;
     COLS.forEach(c => {
@@ -192,7 +194,6 @@ function gerarRelatorioPdf(jsPDFCtor: NonNullable<Window['jspdf']>['jsPDF'], log
     doc.setPage(p);
     doc.setTextColor(140, 150, 165); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
     doc.text('Página ' + p + ' de ' + pageCount, PAGE_W - MARGIN, PAGE_H - 6, { align: 'right' });
-    doc.text('Centro de custo = COD. ORÇ. da planilha de origem.', MARGIN, PAGE_H - 6);
   }
 
   return doc;

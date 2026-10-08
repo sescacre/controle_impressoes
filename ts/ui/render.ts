@@ -12,8 +12,8 @@ function renderFooter(temDados: boolean): void {
   const footer = $('footerNote');
   footer.classList.toggle('left', !temDados);
   footer.textContent = temDados
-    ? `Mês de referência: ${monthLabel(state.currentMonth)} · Fonte inicial: planilha_de_impressão.xlsx (semente Agosto/2026) · Centro de custo = COD. ORÇ. da planilha.`
-    : 'Fonte: planilha “Relatório de Impressão Sermatec 2026” (controle interno GETIC, jan-ago). Leituras lançadas ficam salvas neste navegador (localStorage). Plotter A1 é medida em metros lineares.';
+    ? `Mês de referência: ${monthLabel(state.currentMonth)}`
+    : 'Fonte: planilha “Relatório de Impressão Sermatec 2026” (controle interno GETIC, jan-ago). Leituras lançadas ficam salvas no banco compartilhado do servidor. Plotter A1 é medida em metros lineares.';
 }
 
 export function renderAll(): void {
