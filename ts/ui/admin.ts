@@ -49,10 +49,20 @@ async function abrirAreaAdmin(): Promise<void> {
       confirmButton: 'getic-swal-confirm', cancelButton: 'getic-swal-cancel',
       validationMessage: 'getic-swal-validation', actions: 'getic-swal-actions', closeButton: 'getic-swal-closebtn',
     },
+    didOpen: () => {
+      // Inputs são HTML manual, então o atalho padrão de Enter do SweetAlert2
+      // (que só reconhece o próprio option "input") não se aplica aqui.
+      const onEnter = (ev: KeyboardEvent) => { if (ev.key === 'Enter') Swal.clickConfirm(); };
+      $<HTMLInputElement>('swal-user').addEventListener('keydown', onEnter);
+      $<HTMLInputElement>('swal-pass').addEventListener('keydown', onEnter);
+    },
     preConfirm: () => {
+      const confirmBtn = Swal.getConfirmButton();
+      if (confirmBtn) confirmBtn.textContent = 'Entrando...';
       const u = $<HTMLInputElement>('swal-user').value.trim();
       const p = $<HTMLInputElement>('swal-pass').value;
       if (u !== ADMIN_USER || p !== ADMIN_PASS) {
+        if (confirmBtn) confirmBtn.textContent = 'Entrar';
         Swal.showValidationMessage('Usuário ou senha inválidos');
         return false;
       }

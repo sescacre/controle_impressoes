@@ -9,7 +9,7 @@
 .getic-swal-html{color:var(--text-dim) !important;font-family:var(--font-body) !important;}
 .getic-swal-icon{border-color:var(--accent) !important;color:var(--accent) !important;}
 .getic-swal-confirm{
-  background:var(--accent) !important;border-radius:8px !important;font-family:var(--font-body) !important;
+  background:var(--accent) !important;color:#fff !important;border-radius:8px !important;font-family:var(--font-body) !important;
   font-weight:600 !important;box-shadow:none !important;padding:9px 20px !important;
 }
 .getic-swal-confirm:focus{box-shadow:0 0 0 2px var(--accent-soft) !important;}

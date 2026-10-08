@@ -836,10 +836,20 @@
         actions: "getic-swal-actions",
         closeButton: "getic-swal-closebtn"
       },
+      didOpen: () => {
+        const onEnter = (ev) => {
+          if (ev.key === "Enter") Swal.clickConfirm();
+        };
+        $("swal-user").addEventListener("keydown", onEnter);
+        $("swal-pass").addEventListener("keydown", onEnter);
+      },
       preConfirm: () => {
+        const confirmBtn = Swal.getConfirmButton();
+        if (confirmBtn) confirmBtn.textContent = "Entrando...";
         const u = $("swal-user").value.trim();
         const p = $("swal-pass").value;
         if (u !== ADMIN_USER || p !== ADMIN_PASS) {
+          if (confirmBtn) confirmBtn.textContent = "Entrar";
           Swal.showValidationMessage("Usu\xE1rio ou senha inv\xE1lidos");
           return false;
         }
