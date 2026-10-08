@@ -25,7 +25,7 @@ const hasChart = (): boolean => typeof window.Chart !== 'undefined';
 export function configureChartDefaults(): void {
   if (window.Chart) {
     window.Chart.defaults.font.family = "'IBM Plex Sans', system-ui, sans-serif";
-    window.Chart.defaults.font.size = 11.5;
+    window.Chart.defaults.font.size = 14;
   }
 }
 
@@ -102,7 +102,20 @@ function renderChartTop(): void {
   charts.top = new window.Chart!(canvas, {
     type: 'bar',
     data: { labels: rows.map(d => d.sigla), datasets: [{ data: rows.map(d => d.pct), backgroundColor: cssVar('--amber'), borderRadius: 4, maxBarThickness: 20 }] },
-    options: { indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.raw + '%' } } }, scales: { x: { grid: { color: cssVar('--grid') }, ticks: { callback: v => v + '%' } }, y: { grid: { display: false } } } },
+    options: {
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: c => rows[c[0].dataIndex].sigla,
+            label: c => `${c.raw}% do orçamento`,
+            afterLabel: c => `Impressora: ${rows[c.dataIndex].maquina}`,
+          },
+        },
+      },
+      scales: { x: { grid: { color: cssVar('--grid') }, ticks: { callback: v => v + '%' } }, y: { grid: { display: false } } },
+    },
   });
 }
 

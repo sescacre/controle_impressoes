@@ -32,9 +32,11 @@ export function renderKpis(): void {
 }
 
 export function renderContractKpis(): void {
-  // acumulado desde o início do contrato (soma de todos os meses já lançados)
+  // acumulado dentro do ano do mês selecionado (o contrato é renovado anualmente,
+  // então o saldo não deve somar o consumo de um ano no de outro).
+  const anoAtual = state.currentMonth.split('-')[0];
   let acumImpr = 0, acumLoc = 0;
-  state.months.forEach(mk => {
+  state.months.filter(mk => mk.startsWith(anoAtual + '-')).forEach(mk => {
     rowsForMonth(mk).forEach(d => { acumImpr += d.valor_copias; acumLoc += d.valor_loc; });
   });
   const saldoImpr = CONTRATO_ANUAL.impressao - acumImpr;
