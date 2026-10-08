@@ -3,7 +3,6 @@
 # ============================================
 
 ARG NODE_VERSION=24.13.0-slim
-ARG NGINX_VERSION=1.27-alpine
 
 FROM node:${NODE_VERSION} AS builder
 
@@ -20,17 +19,31 @@ COPY ts ./ts
 RUN npm run build
 
 # ============================================
-# Stage 2: Servir os arquivos estáticos com nginx
+# Stage 2: servidor Node (estáticos + API /api/... ligada ao MySQL)
 # ============================================
 
-FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS runner
+FROM node:${NODE_VERSION} AS runner
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
+ENV NODE_ENV=production
 
-COPY --from=builder /app/dist /usr/share/nginx/html/dist
-COPY html /usr/share/nginx/html/html
-COPY css /usr/share/nginx/html/css
-COPY assets /usr/share/nginx/html/assets
+# Só as dependências de produção (mysql2) — sem devDependencies de build
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --omit=dev --no-audit --no-fund
 
-# nginx-unprivileged já roda como usuário não-root e escuta na 3009
+COPY server.js ./
+COPY server ./server
+COPY html ./html
+COPY css ./css
+COPY assets ./assets
+COPY --from=builder /app/dist ./dist
+
+# server.js lê DB_HOST/DB_USER/DB_PASSWORD/DB_NAME etc. de variáveis de
+# ambiente configuradas no host de deploy (Dokploy) — não existe .env na
+# imagem, então process.loadEnvFile() falha em silêncio em produção (ver server.js).
+
 EXPOSE 3009
+USER node
+
+CMD ["node", "server.js"]
